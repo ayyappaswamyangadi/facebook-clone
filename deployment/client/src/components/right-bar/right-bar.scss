@@ -1,0 +1,121 @@
+.right-bar {
+  overflow-y: auto;
+  height: calc(100vh - 50px);
+  flex: 3.5;
+  position: sticky;
+  top: 50px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.birthday-container {
+  display: flex;
+  align-items: center;
+}
+
+.right-bar-wrapper {
+  padding: 20px 20px 0 0;
+}
+
+.birthday-img {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.birthday-text {
+  font-weight: 300;
+}
+
+.right-bar-ad {
+  width: 100%;
+  border-radius: 10px;
+  margin: 30px 0;
+}
+
+.right-bar-title {
+  margin-bottom: 20px;
+}
+
+.right-bar-friend-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.right-bar-title {
+  font-style: 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.right-bar-info {
+  margin-bottom: 30px;
+}
+
+.right-bar-info-item {
+  margin-bottom: 10px;
+}
+
+.right-bar-info-key {
+  font-weight: 500;
+  margin-right: 15px;
+  color: cadetblue;
+}
+
+.right-bar-info-value {
+  font-weight: 300;
+}
+
+.right-bar-followings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.right-bar-following {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.right-bar-following-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.friendListLink {
+  text-decoration: none;
+  color: black;
+
+  &:link {
+    text-decoration: none;
+    color: black;
+  }
+
+  &:visited {
+    text-decoration: none;
+    color: black;
+  }
+}
+
+.right-bar-follow-button {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  border: none;
+  background-color: #1872f2;
+  color: white;
+  border-radius: 5px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  font-style: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
