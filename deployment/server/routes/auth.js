@@ -4,44 +4,43 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-//Register user dynamically
+// Register user
 auth.post("/register", async (req, res) => {
   try {
-    //hashing password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-    //creating new user
     const newUser = new User({
       userName: req.body.userName,
       email: req.body.email,
       password: hashedPassword,
-      profilePicture: req.body.profilePicture,
-      coverPicture: req.body.coverPicture,
-      followers: req.body.followers,
-      following: req.body.following,
-      desc: req.body.desc,
-      city: req.body.city,
-      from: req.body.from,
+      profilePicture: req.body.profilePicture || "",
+      coverPicture: req.body.coverPicture || "",
+      desc: req.body.desc || "",
+      city: req.body.city || "",
+      from: req.body.from || "",
     });
 
-    //saving user to db
     const user = await newUser.save();
 
-    //generate accessToken AFTER user is saved so user._id is available
     const accessToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
       process.env.MY_JWT_SECRET_KEY,
-      { expiresIn: "15m" }
+      { expiresIn: "7d" }
     );
 
     res
-      .cookie("access_token", accessToken, { httpOnly: true })
+      .cookie("access_token", accessToken, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: "lax",
+      })
       .status(200)
       .json({
-        userName: user.userName,
-        isAdmin: user.isAdmin,
         _id: user._id,
+        userName: user.userName,
+        email: user.email,
+        isAdmin: user.isAdmin,
         accessToken,
         profilePicture: user.profilePicture,
         coverPicture: user.coverPicture,
@@ -50,6 +49,7 @@ auth.post("/register", async (req, res) => {
         desc: user.desc,
         city: user.city,
         from: user.from,
+        relationship: user.relationship,
         createdAt: user.createdAt,
       });
   } catch (err) {
@@ -58,7 +58,7 @@ auth.post("/register", async (req, res) => {
   }
 });
 
-//user login process
+// Login
 auth.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
@@ -70,22 +70,24 @@ auth.post("/login", async (req, res) => {
     );
     if (!validatePassword) return res.status(400).json("wrong password");
 
-    //generate accessToken
     const accessToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
       process.env.MY_JWT_SECRET_KEY,
-      { expiresIn: "15m" }
+      { expiresIn: "7d" }
     );
 
     res
       .cookie("access_token", accessToken, {
         httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        sameSite: "lax",
       })
       .status(200)
       .json({
-        userName: user.userName,
-        isAdmin: user.isAdmin,
         _id: user._id,
+        userName: user.userName,
+        email: user.email,
+        isAdmin: user.isAdmin,
         accessToken,
         profilePicture: user.profilePicture,
         coverPicture: user.coverPicture,
@@ -94,6 +96,7 @@ auth.post("/login", async (req, res) => {
         desc: user.desc,
         city: user.city,
         from: user.from,
+        relationship: user.relationship,
         createdAt: user.createdAt,
       });
   } catch (err) {
@@ -102,14 +105,55 @@ auth.post("/login", async (req, res) => {
   }
 });
 
+// Logout
+auth.post("/logout", (req, res) => {
+  res
+    .clearCookie("access_token")
+    .status(200)
+    .json("logged out successfully");
+});
+
+// Forgot / Reset Password
+// Simple direct reset (no email token for demo app).
+// User provides their email + new password and it's updated immediately.
+auth.post("/forgot-password", async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json("Email and new password are required.");
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json("Password must be at least 6 characters.");
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json("No account found with that email address.");
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await User.findByIdAndUpdate(user._id, { password: hashedPassword });
+    res.status(200).json("Password reset successful.");
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Something went wrong. Please try again.");
+  }
+});
+
+// Verify JWT middleware — supports httpOnly cookie OR Bearer token header
 const verify = (req, res, next) => {
-  const token = req.cookies.access_token;
+  let token = req.cookies.access_token;
+
+  if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
 
   if (token) {
     jwt.verify(token, process.env.MY_JWT_SECRET_KEY, (err, user) => {
-      if (err) {
-        return res.status(403).json("token is not valid!");
-      }
+      if (err) return res.status(403).json("token is not valid!");
       req.user = user;
       next();
     });
@@ -119,7 +163,7 @@ const verify = (req, res, next) => {
 };
 
 auth.get("/", (req, res) => {
-  res.send("I am in auth page right now");
+  res.send("Auth route is working");
 });
 
 module.exports = auth;

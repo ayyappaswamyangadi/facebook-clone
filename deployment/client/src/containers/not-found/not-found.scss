@@ -2,17 +2,45 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: calc(100vh - 50px);
+    min-height: 100vh;
     flex-direction: column;
+    text-align: center;
+    padding: 20px;
+    background: #f0f2f5;
 }
 
-.not-found-go-to-home-page {
-    font-size: 30px;
-    background-color: #1775ee;
-    padding: 10px;
-    border-radius: 20px;
+.not-found-code {
+    font-size: 120px;
+    font-weight: 900;
+    color: #1877f2;
+    margin: 0;
+    line-height: 1;
+}
+
+.not-found-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #050505;
+    margin: 8px 0 12px;
+}
+
+.not-found-desc {
+    font-size: 16px;
+    color: #65676b;
+    margin: 0 0 24px;
+}
+
+.not-found-go-home {
+    font-size: 16px;
+    background-color: #1877f2;
+    padding: 12px 24px;
+    border-radius: 10px;
     color: white;
-    font-weight: 600;
-    cursor: pointer;
+    font-weight: 700;
     text-decoration: none;
+    transition: background 0.15s;
+
+    &:hover {
+        background: #166fe5;
+    }
 }
