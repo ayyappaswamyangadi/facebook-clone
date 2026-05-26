@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+
+    <button type="button" onclick='handleDownloadImage()'>
+        Download
+    </button>
+    <div id="print">This will be downloaded as an image</div>
+
+
+    <script>
+
+        import html2canvas from 'html2canvas'
+        const handleDownloadImage = async () => {
+            const element = document.getElementById("print")
+            canvas = await html2canvas(element),
+                data = canvas.toDataURL("image/jpg"),
+                link = document.createElement("a");
+
+            link.href = data;
+            link.download = "downloaded-image.jpg";
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+
+</html>
