@@ -25,13 +25,10 @@ const Share = () => {
         }
         if (file) {
             const data = new FormData();
-
-            const fileName = Date.now() + file.name;
-            data.append("file", file, fileName);
-            newPost.img = fileName;
-
+            data.append("file", file);
             try {
-                await axios.post('/upload', data)
+                const uploadRes = await axios.post('/upload', data);
+                newPost.img = uploadRes.data;
             } catch (err) {
                 console.log(err);
             }
@@ -49,7 +46,7 @@ const Share = () => {
         <div className='share'>
             <div className="share-wrapper">
                 <div className="share-top">
-                    <Link to={"/profile/" + user.userName}><img src={user.profilePicture ? public_folder_path + "profiles/" + user.profilePicture : public_folder_path + "/profiles/no-avatar.png"} alt="profile-pic" className="share-profile-pic" /></Link>
+                    <Link to={"/profile/" + user.userName}><img src={user.profilePicture ? (user.profilePicture.startsWith('http') ? user.profilePicture : public_folder_path + "profiles/" + user.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt="profile-pic" className="share-profile-pic" /></Link>
                     <input type="text"
                         placeholder={"what's in your mind " + user.userName + "?"} className="share-input" ref={desc} />
                 </div>

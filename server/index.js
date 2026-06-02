@@ -12,6 +12,8 @@ const postRoutes = require("./routes/post");
 const port = process.env.PORT;
 const multer = require("multer");
 const path = require("path");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -19,6 +21,12 @@ const cookieParser = require("cookie-parser");
 const app = express();
 
 databaseConnection();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 //middleware
 app.use(express.json());
@@ -37,21 +45,21 @@ app.use("/messages", messageRoutes);
 app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 //upload file
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/images");
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "facebook-clone",
+    allowed_formats: ["jpg", "jpeg", "png"],
   },
 });
 
-const uploads = multer({ storage: storage });
+const uploads = multer({ storage });
 app.post("/upload", uploads.single("file"), (req, res) => {
   try {
-    return res.status(200).json("file uploaded successfully");
+    return res.status(200).json(req.file.path);
   } catch (err) {
     console.log(err);
+    res.status(500).json(err);
   }
 });
 

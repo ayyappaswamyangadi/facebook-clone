@@ -44,7 +44,7 @@ const Topbar = () => {
         </div>
       </div>
       <Link to={`/profile/${user.userName}`}>
-        <img src={user.profilePicture ? public_folder_path + "profiles/" + user.profilePicture : public_folder_path + "profiles/no-avatar.png"} alt="profile-picture" className="topBarImg" />
+        <img src={user.profilePicture ? (user.profilePicture.startsWith('http') ? user.profilePicture : public_folder_path + "profiles/" + user.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt="profile-picture" className="topBarImg" />
       </Link>
     </div>
 

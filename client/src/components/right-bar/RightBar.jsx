@@ -92,7 +92,7 @@ const RightBar = ({ user }) => {
                     {friends.map((friend) =>
                     (
                         <Link to={"/profile/" + friend.userName} className="friendListLink"> <div className="right-bar-following">
-                            <img src={friend.ProfilePicture ? public_folder_path + friend.ProfilePicture : public_folder_path + "profiles/no-avatar.png"} alt="" className="right-bar-following-img" />
+                            <img src={friend.profilePicture ? (friend.profilePicture.startsWith('http') ? friend.profilePicture : public_folder_path + "profiles/" + friend.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt="" className="right-bar-following-img" />
                             <span className="right-bar-following-name">{friend.userName}</span>
                         </div>
                             {console.log("one", friends)}

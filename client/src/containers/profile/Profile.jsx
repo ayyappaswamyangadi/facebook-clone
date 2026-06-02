@@ -27,8 +27,8 @@ const Profile = () => {
                 <div className="profile-right">
                     <div className="profile-right-top">
                         <div className="profile-cover">
-                            <img src={user.coverPicture ? public_folder_path + user.coverPicture : public_folder_path + "profiles/no-cover.png"} alt="" className="profile-cover-img" />
-                            <img src={user.profilePicture ? public_folder_path + `/profiles/` + user.profilePicture : public_folder_path + "profiles/no-avatar.png"} alt="" className="profile-user-img" />
+                            <img src={user.coverPicture ? (user.coverPicture.startsWith('http') ? user.coverPicture : public_folder_path + user.coverPicture) : public_folder_path + "profiles/no-cover.png"} alt="" className="profile-cover-img" />
+                            <img src={user.profilePicture ? (user.profilePicture.startsWith('http') ? user.profilePicture : public_folder_path + "profiles/" + user.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt="" className="profile-user-img" />
                         </div>
                         <div className="profile-info">
                             <h4 className="profile-info-name">{user.userName}</h4>

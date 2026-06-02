@@ -43,7 +43,7 @@ const Post = ({ post }) => {
                 <div className="post-top">
                     <div className="post-top-left">
                         <Link to={`/profile/${user.userName}`} className="post-links">
-                            <img src={user.profilePicture ? public_folder_path + "/profiles/" + user.profilePicture : public_folder_path + "profiles/no-avatar.png"} alt="profile-picture" className="post-profile-img" />
+                            <img src={user.profilePicture ? (user.profilePicture.startsWith('http') ? user.profilePicture : public_folder_path + "profiles/" + user.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt="profile-picture" className="post-profile-img" />
                         </Link>
                         <Link to={`/profile/${user.userName}`} className="post-links">
                             <span className="post-user-name">{user.userName}</span>
@@ -56,7 +56,7 @@ const Post = ({ post }) => {
                 </div>
                 <div className="post-center">
                     <span className="post-text">{post?.desc}</span>
-                    <img src={public_folder_path + post.img} alt="" className="post-img" />
+                    {post.img && <img src={post.img.startsWith('http') ? post.img : public_folder_path + post.img} alt="" className="post-img" />}
                 </div>
                 <div className="post-bottom">
                     <div className="post-bottom-left">

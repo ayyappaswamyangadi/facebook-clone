@@ -24,7 +24,7 @@ const Conversations = ({ conversation, currentUser }) => {
     }, [currentUser, conversation])
     return (
         <div className="conversation">
-            <img src={user?.profilePicture ? public_folder_path + "profiles/" + user.profilePicture : public_folder_path + "profiles/no-avatar.png"} alt="" className="conversation-image" />
+            <img src={user?.profilePicture ? (user.profilePicture.startsWith('http') ? user.profilePicture : public_folder_path + "profiles/" + user.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt="" className="conversation-image" />
             <span className="conversation-name">{user?.userName}</span>
         </div>
     )
