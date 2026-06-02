@@ -9,7 +9,7 @@ const Login = () => {
 
     const email = useRef();
     const password = useRef();
-    const { user, loading, error, dispatch } = useContext(AuthContext)
+    const { loading, dispatch } = useContext(AuthContext)
 
     const handleClick = (event) => {
         event.preventDefault();

@@ -8,6 +8,7 @@ const CloseFriends = ({ user }) => {
         <li className="side-bar-friend">
             <img
                 src={public_folder_path + user.profilePicture}
+                alt={user.userName}
                 className="side-bar-friend-img"
             />
             <span className="side-bar-friend-name">{user.userName}</span>

@@ -60,8 +60,8 @@ const Post = ({ post }) => {
                 </div>
                 <div className="post-bottom">
                     <div className="post-bottom-left">
-                        <img src={`${public_folder_path}` + "like.png"} alt="" className="like-img" onClick={likeHandler} />
-                        <img src={`${public_folder_path}` + "heart.png"} alt="" className="heart-img" onClick={likeHandler} />
+                        <img src={`${public_folder_path}like.png`} alt="" className="like-img" onClick={likeHandler} />
+                        <img src={`${public_folder_path}heart.png`} alt="" className="heart-img" onClick={likeHandler} />
                         <span className="post-like-counter">{like} people like it</span>
                     </div>
                     <div className="post-bottom-right">
