@@ -1,0 +1,351 @@
+.share {
+    width: 100%;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 0 16px -8px rgba(0, 0, 0, 0.68);
+    margin-bottom: 16px;
+}
+
+.share-wrapper {
+    padding: 12px 14px;
+}
+
+.share-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.share-profile-pic {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.share-input-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.share-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: #f0f2f5;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 15px;
+    cursor: text;
+    font-family: inherit;
+    color: #050505;
+    box-sizing: border-box;
+
+    &::placeholder {
+        color: #65676b;
+    }
+}
+
+/* Selected tag chips under the input */
+.share-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 2px 4px;
+}
+
+.share-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e7f0fd;
+    color: #1877f2;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.share-tag-close {
+    font-size: 14px !important;
+    cursor: pointer;
+    color: #1877f2;
+    opacity: 0.7;
+
+    &:hover { opacity: 1; }
+}
+
+/* Expanded meta inputs (location / tag) */
+.share-expanded-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin: 8px 0;
+}
+
+.share-meta-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    font-family: inherit;
+    color: #050505;
+
+    &::placeholder { color: #65676b; }
+}
+
+.share-meta-confirm {
+    background: #1877f2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 700;
+
+    &:hover { background: #166fe5; }
+}
+
+.share-meta-cancel {
+    background: #e4e6e9;
+    color: #050505;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover { background: #d8dadf; }
+}
+
+/* Feelings picker */
+.share-feeling-grid {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 8px 0;
+}
+
+.share-feeling-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #050505;
+    margin: 0 0 10px;
+}
+
+.share-feeling-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.share-feeling-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1.5px solid #e4e6e9;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s;
+
+    &:hover {
+        border-color: #1877f2;
+        background: #e7f0fd;
+    }
+
+    &.selected {
+        border-color: #1877f2;
+        background: #e7f0fd;
+        color: #1877f2;
+    }
+}
+
+.share-feeling-emoji {
+    font-size: 18px;
+}
+
+.share-feeling-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #050505;
+}
+
+.share-feeling-close {
+    margin-top: 10px;
+    display: block;
+    width: 100%;
+    padding: 6px;
+    border: none;
+    border-radius: 8px;
+    background: #e4e6e9;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #050505;
+
+    &:hover { background: #d8dadf; }
+}
+
+.share-horizontal-line {
+    margin: 12px 0;
+    border: none;
+    border-top: 1px solid #e4e6e9;
+}
+
+.share-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.share-options {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.share-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #65676b;
+    transition: background 0.12s;
+    user-select: none;
+
+    &:hover {
+        background: #f0f2f5;
+    }
+
+    &.share-option-active {
+        background: #e7f0fd;
+        color: #1877f2;
+    }
+}
+
+.share-option-text {
+    font-size: 13px;
+    font-weight: 600;
+
+    @media (max-width: 900px) {
+        display: none;
+    }
+}
+
+.share-button {
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    background-color: #1877f2;
+    cursor: pointer;
+    transition: background 0.12s;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+        background: #166fe5;
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+#file {
+    display: none;
+}
+
+.share-container {
+    padding: 0 4px 10px;
+    position: relative;
+}
+
+.share-image {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    max-height: 300px;
+}
+
+.share-cancel-image {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    cursor: pointer;
+    color: #65676b;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.9;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.share-error {
+    font-size: 13px;
+    color: #e41e3f;
+    background: #fce8ec;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 4px 0 8px;
+    font-weight: 500;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .share-wrapper {
+    padding: 10px 10px;
+  }
+
+  .share-profile-pic {
+    width: 34px;
+    height: 34px;
+  }
+
+  .share-option {
+    padding: 5px 8px;
+    font-size: 13px;
+  }
+
+  .share-bottom {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .share-button {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .share-feeling-options {
+    gap: 4px;
+  }
+
+  .share-feeling-option {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}

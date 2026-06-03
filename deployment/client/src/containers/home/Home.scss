@@ -1,0 +1,28 @@
+.home-container {
+  display: flex;
+  background: #f0f2f5;
+  min-height: calc(100vh - 56px);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+/* Tablet (≤1024px): hide right bar */
+@media (max-width: 1024px) {
+  .home-container > :nth-child(3) {
+    display: none;
+  }
+}
+
+/* Mobile (≤768px): hide both sidebars, feed takes full width */
+@media (max-width: 768px) {
+  .home-container {
+    flex-direction: column;
+    min-height: calc(100vh - 52px);
+  }
+
+  /* hide sidebar & rightbar on mobile */
+  .home-container > :nth-child(1),
+  .home-container > :nth-child(3) {
+    display: none;
+  }
+}
