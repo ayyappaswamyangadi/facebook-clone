@@ -95,3 +95,15 @@
     border-bottom: 1px dashed grey;
     font-size: 15px;
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 600px) {
+    .post-wrapper {
+        padding: 8px;
+    }
+
+    .post-img {
+        max-height: 300px;
+    }
+}

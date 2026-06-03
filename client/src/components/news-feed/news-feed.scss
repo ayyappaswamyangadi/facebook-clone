@@ -1,7 +1,20 @@
 .news-feed {
   flex: 5.5;
+  min-width: 0;
 }
 
 .news-feed-wrapper {
   padding: 20px;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .news-feed {
+    flex: 1;
+  }
+
+  .news-feed-wrapper {
+    padding: 10px;
+  }
 }

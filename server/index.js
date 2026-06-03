@@ -9,6 +9,9 @@ const conversationRoutes = require("./routes/conversations");
 const messageRoutes = require("./routes/messages");
 const databaseConnection = require("./database-connection");
 const postRoutes = require("./routes/post");
+const notificationRoutes = require("./routes/notifications");
+const storiesRoutes = require("./routes/stories");
+const commentsRoutes = require("./routes/comments");
 const port = process.env.PORT;
 const multer = require("multer");
 const path = require("path");
@@ -41,6 +44,9 @@ app.use("/auth", authRoutes);
 app.use("/post", postRoutes);
 app.use("/conversations", conversationRoutes);
 app.use("/messages", messageRoutes);
+app.use("/notifications", notificationRoutes);
+app.use("/stories", storiesRoutes);
+app.use("/comments", commentsRoutes);
 
 app.use("/images", express.static(path.join(__dirname, "public/images")));
 
