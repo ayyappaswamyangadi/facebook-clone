@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "./comments.scss";
 
-const Comments = ({ postId, postOwnerId }) => {
+const Comments = ({ postId, postOwnerId, onLoaded }) => {
   const { user: currentUser } = useContext(AuthContext);
   const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
 
@@ -21,6 +21,7 @@ const Comments = ({ postId, postOwnerId }) => {
       try {
         const res = await axios.get("/comments/" + postId);
         setComments(res.data);
+        onLoaded && onLoaded(res.data.length);
 
         // Resolve user info for each unique userId
         const uniqueIds = [...new Set(res.data.map((c) => c.userId))];
@@ -37,6 +38,7 @@ const Comments = ({ postId, postOwnerId }) => {
       }
     };
     if (postId) fetchComments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   const handleSubmit = async (e) => {
@@ -50,7 +52,11 @@ const Comments = ({ postId, postOwnerId }) => {
         text: text.trim(),
       });
       const newComment = res.data;
-      setComments((prev) => [...prev, newComment]);
+      setComments((prev) => {
+        const updated = [...prev, newComment];
+        onLoaded && onLoaded(updated.length);
+        return updated;
+      });
 
       // Cache current user info
       setCommentUsers((prev) => ({
@@ -102,7 +108,11 @@ const Comments = ({ postId, postOwnerId }) => {
       await axios.delete("/comments/" + commentId, {
         data: { userId: currentUser._id },
       });
-      setComments((prev) => prev.filter((c) => c._id !== commentId));
+      setComments((prev) => {
+        const updated = prev.filter((c) => c._id !== commentId);
+        onLoaded && onLoaded(updated.length);
+        return updated;
+      });
     } catch (err) {
       console.log(err);
     }
@@ -112,6 +122,7 @@ const Comments = ({ postId, postOwnerId }) => {
     const u = commentUsers[userId];
     if (!u || !u.profilePicture)
       return public_folder + "profiles/no-avatar.png";
+    if (u.profilePicture.startsWith("http")) return u.profilePicture;
     return public_folder + "profiles/" + u.profilePicture;
   };
 
@@ -122,11 +133,12 @@ const Comments = ({ postId, postOwnerId }) => {
         <img
           src={
             currentUser.profilePicture
-              ? public_folder + "profiles/" + currentUser.profilePicture
+              ? (currentUser.profilePicture.startsWith("http") ? currentUser.profilePicture : public_folder + "profiles/" + currentUser.profilePicture)
               : public_folder + "profiles/no-avatar.png"
           }
-          alt="me"
+          alt=""
           className="comment-avatar"
+          onError={(e) => { e.target.onerror = null; e.target.src = public_folder + "profiles/no-avatar.png"; }}
         />
         <div className="comment-input-wrapper">
           <input
@@ -158,8 +170,9 @@ const Comments = ({ postId, postOwnerId }) => {
               <Link to={`/profile/${u?.userName || ""}`}>
                 <img
                   src={avatarSrc(comment.userId)}
-                  alt="user"
+                  alt=""
                   className="comment-avatar"
+                  onError={(e) => { e.target.onerror = null; e.target.src = public_folder + "profiles/no-avatar.png"; }}
                 />
               </Link>
               <div className="comment-body">

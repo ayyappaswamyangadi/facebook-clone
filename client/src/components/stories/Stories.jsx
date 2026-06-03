@@ -89,9 +89,10 @@ const Stories = () => {
   const profileSrc = (uid) => {
     const u = userMap[uid];
     if (!u) return public_folder + "profiles/no-avatar.png";
-    return u.profilePicture
-      ? public_folder + "profiles/" + u.profilePicture
-      : public_folder + "profiles/no-avatar.png";
+    if (!u.profilePicture) return public_folder + "profiles/no-avatar.png";
+    return u.profilePicture.startsWith("http")
+      ? u.profilePicture
+      : public_folder + "profiles/" + u.profilePicture;
   };
 
   const storySrc = (story) => {
@@ -110,7 +111,9 @@ const Stories = () => {
           <img
             src={
               user.profilePicture
-                ? public_folder + "profiles/" + user.profilePicture
+                ? user.profilePicture.startsWith("http")
+                  ? user.profilePicture
+                  : public_folder + "profiles/" + user.profilePicture
                 : public_folder + "profiles/no-avatar.png"
             }
             alt="add"

@@ -27,14 +27,21 @@ const Messenger = () => {
     const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
     useEffect(() => {
-        socket.current = io("ws://localhost:8900");
-        socket.current.on("getMessage", (data) => {
+        socket.current = io(process.env.REACT_APP_SOCKET_URL || "http://localhost:8900");
+
+        const handleGetMessage = (data) => {
             setArrivalMessage({
                 sender: data.userId,
                 text: data.text,
                 createdAt: Date.now(),
             });
-        });
+        };
+        socket.current.on("getMessage", handleGetMessage);
+
+        return () => {
+            socket.current.off("getMessage", handleGetMessage);
+            socket.current.disconnect();
+        };
     }, []);
 
     useEffect(() => {
@@ -44,14 +51,28 @@ const Messenger = () => {
     }, [arrivalMessage, currentChat]);
 
     useEffect(() => {
-        socket.current.emit("addUser", user._id);
-        socket.current.on("getUsers", (users) => {
+        if (!socket.current) return;
+
+        const handleGetUsers = (socketUsers) => {
             setOnlineUsers(
                 user.following.filter((friend) =>
-                    users.some((u) => u.userId === friend)
+                    socketUsers.some((u) => u.userId === friend)
                 )
             );
-        });
+        };
+        // Re-register addUser on every connect/reconnect (handles server restarts)
+        const handleConnect = () => {
+            socket.current.emit("addUser", user._id);
+        };
+
+        socket.current.emit("addUser", user._id);
+        socket.current.on("getUsers", handleGetUsers);
+        socket.current.on("connect", handleConnect);
+
+        return () => {
+            socket.current.off("getUsers", handleGetUsers);
+            socket.current.off("connect", handleConnect);
+        };
     }, [user]);
 
     useEffect(() => {
@@ -154,9 +175,16 @@ const Messenger = () => {
 
         try {
             const response = await axios.post("/messages", message);
-            setMessages([...messages, response.data]);
+            setMessages((prev) => [...prev, response.data]);
             setNewMessage("");
             setShowEmojiPicker(false);
+
+            // Notify the receiver
+            axios.post("/notifications", {
+                userId: receiverId,
+                senderId: user._id,
+                type: "message",
+            }).catch(() => {});
         } catch (error) {
             console.log(error);
         }
@@ -201,6 +229,28 @@ const Messenger = () => {
                     <div className="chat-box-wrapper">
                         {currentChat ? (
                             <>
+                                <div className="chat-box-header">
+                                    <div className="chat-box-header-info">
+                                        {chatPartner && (
+                                            <>
+                                                <img
+                                                    src={getProfilePic(chatPartner)}
+                                                    alt=""
+                                                    className="chat-box-header-avatar"
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = public_folder_path + "profiles/no-avatar.png"; }}
+                                                />
+                                                <span className="chat-box-header-name">{chatPartner.userName}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <button
+                                        className="chat-box-close-btn"
+                                        onClick={() => { setCurrentChat(null); setChatPartner(null); setMessages([]); }}
+                                        title="Close chat"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
                                 <div className="chat-box-top">
                                     {messages.map((message) => (
                                         <div

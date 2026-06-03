@@ -56,7 +56,7 @@ auth.post("/login", async (req, res) => {
     const accessToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
       process.env.MY_JWT_SECRET_KEY,
-      { expiresIn: "15m" }
+      { expiresIn: "7d" }
     );
 
     res
@@ -111,7 +111,11 @@ auth.post("/forgot-password", async (req, res) => {
 });
 
 const verify = (req, res, next) => {
-  const token = req.cookies.access_token;
+  const cookieToken = req.cookies?.access_token;
+  const authHeader = req.headers.authorization;
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  const token = cookieToken || bearerToken;
+
   if (token) {
     jwt.verify(token, process.env.MY_JWT_SECRET_KEY, (err, user) => {
       if (err) {
