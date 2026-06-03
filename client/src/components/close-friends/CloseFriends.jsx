@@ -7,7 +7,11 @@ const CloseFriends = ({ user }) => {
     return (
         <li className="side-bar-friend">
             <img
-                src={public_folder_path + user.profilePicture}
+                src={user.profilePicture
+                    ? (user.profilePicture.startsWith('http')
+                        ? user.profilePicture
+                        : public_folder_path + user.profilePicture)
+                    : public_folder_path + "profiles/no-avatar.png"}
                 alt={user.userName}
                 className="side-bar-friend-img"
             />

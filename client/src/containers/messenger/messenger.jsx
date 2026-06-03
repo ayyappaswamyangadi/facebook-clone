@@ -7,7 +7,8 @@ import Message from "../../components/message/Message";
 import Topbar from "../../components/topbar/Topbar";
 import "./messenger.scss";
 import axios from "axios";
-import { io } from "socket.io-client"
+import { io } from "socket.io-client";
+import EmojiPicker from "emoji-picker-react";
 
 const Messenger = () => {
     const [conversations, setConversation] = useState([]);
@@ -15,40 +16,43 @@ const Messenger = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [arrivalMessage, setArrivalMessage] = useState(null);
-    const [onlineUsers, setOnlineUsers] = useState([])
-    const socket = useRef()
-    const scrollRef = useRef()
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [chatPartner, setChatPartner] = useState(null);
+    const socket = useRef();
+    const scrollRef = useRef();
+    const inputRef = useRef();
+    const emojiPickerRef = useRef();
     const { user } = useContext(AuthContext);
+    const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
     useEffect(() => {
-        socket.current = io("ws://localhost:8900")
-        socket.current.on("getMessage", data => {
+        socket.current = io("ws://localhost:8900");
+        socket.current.on("getMessage", (data) => {
             setArrivalMessage({
                 sender: data.userId,
                 text: data.text,
-                createdAt: Date.now()
-            })
-        })
-    }, [])
+                createdAt: Date.now(),
+            });
+        });
+    }, []);
 
     useEffect(() => {
-        arrivalMessage && currentChat?.members.includes(arrivalMessage.sender) && setMessages(prev => [...prev, arrivalMessage])
-    }, [arrivalMessage, currentChat])
+        arrivalMessage &&
+            currentChat?.members.includes(arrivalMessage.sender) &&
+            setMessages((prev) => [...prev, arrivalMessage]);
+    }, [arrivalMessage, currentChat]);
 
     useEffect(() => {
-        socket.current.emit("addUser", user._id)
-        socket.current.on("getUsers", users => {
-
-            setOnlineUsers(user.following.filter((friend) => users.some((u) => u.userId === friend)))
-        })
-    }, [user])
-
-
-    // useEffect(() => {
-    //     socket?.on("welcome", message => {
-    //         console.log(message)
-    //     })
-    // }, [socket])
+        socket.current.emit("addUser", user._id);
+        socket.current.on("getUsers", (users) => {
+            setOnlineUsers(
+                user.following.filter((friend) =>
+                    users.some((u) => u.userId === friend)
+                )
+            );
+        });
+    }, [user]);
 
     useEffect(() => {
         const getConversations = async () => {
@@ -65,44 +69,109 @@ const Messenger = () => {
     useEffect(() => {
         const getMessages = async () => {
             try {
-                const response = await axios.get("/messages/" + currentChat?._id)
-                setMessages(response.data)
+                const response = await axios.get("/messages/" + currentChat?._id);
+                setMessages(response.data);
             } catch (error) {
-                console.log(error)
+                console.log(error);
             }
-        }
-        getMessages()
-    }, [currentChat])
+        };
+        getMessages();
+    }, [currentChat]);
 
-    const handleClick = async (event) => {
+    useEffect(() => {
+        if (!currentChat) return;
+        const partnerId = currentChat.members.find((m) => m !== user._id);
+        const fetchPartner = async () => {
+            try {
+                const res = await axios.get("/users?userId=" + partnerId);
+                setChatPartner(res.data);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        fetchPartner();
+    }, [currentChat, user._id]);
+
+    // Close emoji picker when clicking outside
+    useEffect(() => {
+        const handleOutsideClick = (e) => {
+            if (
+                emojiPickerRef.current &&
+                !emojiPickerRef.current.contains(e.target)
+            ) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }, []);
+
+    const getProfilePic = (u) => {
+        if (!u?.profilePicture) return public_folder_path + "profiles/no-avatar.png";
+        if (u.profilePicture.startsWith("http")) return u.profilePicture;
+        return public_folder_path + "profiles/" + u.profilePicture;
+    };
+
+    const onEmojiClick = (emojiData) => {
+        const emoji = emojiData.emoji;
+        const input = inputRef.current;
+        if (!input) {
+            setNewMessage((prev) => prev + emoji);
+            return;
+        }
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const updated =
+            newMessage.substring(0, start) + emoji + newMessage.substring(end);
+        setNewMessage(updated);
+        // Restore cursor position after React re-render
+        requestAnimationFrame(() => {
+            input.selectionStart = start + emoji.length;
+            input.selectionEnd = start + emoji.length;
+            input.focus();
+        });
+    };
+
+    const handleSend = async (event) => {
         event.preventDefault();
+        if (!newMessage.trim()) return;
+
         const message = {
             sender: user._id,
             text: newMessage,
-            conversationId: currentChat._id
-        }
+            conversationId: currentChat._id,
+        };
 
-        const receiverId = currentChat.members.find(memberId => memberId !== user._id)
+        const receiverId = currentChat.members.find(
+            (memberId) => memberId !== user._id
+        );
 
         socket.current.emit("sendMessage", {
             userId: user._id,
             receiverId,
-            text: newMessage
+            text: newMessage,
         });
 
         try {
             const response = await axios.post("/messages", message);
-            setMessages([...messages, response.data])
-            setNewMessage("")
+            setMessages([...messages, response.data]);
+            setNewMessage("");
+            setShowEmojiPicker(false);
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-    }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend(e);
+        }
+    };
 
     useEffect(() => {
-        scrollRef.current?.scrollIntoView({ behavior: "smooth" })
-    }, [messages])
-
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     return (
         <>
@@ -116,13 +185,13 @@ const Messenger = () => {
                             className="chat-menu-input"
                         />
                         {conversations.map((conversation) => (
-                            <div onClick={() => {
-                                setCurrentChat(conversation)
-                            }}>
+                            <div
+                                key={conversation._id}
+                                onClick={() => setCurrentChat(conversation)}
+                            >
                                 <Conversations
                                     conversation={conversation}
                                     currentUser={user}
-                                    key={user._id}
                                 />
                             </div>
                         ))}
@@ -130,29 +199,82 @@ const Messenger = () => {
                 </div>
                 <div className="chat-box">
                     <div className="chat-box-wrapper">
-                        {currentChat ?
-                            (<>
+                        {currentChat ? (
+                            <>
                                 <div className="chat-box-top">
                                     {messages.map((message) => (
-                                        <div ref={scrollRef}>
-                                            <Message message={message} key={user._id} own={message.sender === user._id} />
+                                        <div
+                                            ref={scrollRef}
+                                            key={message._id || message.createdAt}
+                                        >
+                                            <Message
+                                                message={message}
+                                                own={message.sender === user._id}
+                                                senderPicture={
+                                                    message.sender === user._id
+                                                        ? getProfilePic(user)
+                                                        : getProfilePic(chatPartner)
+                                                }
+                                            />
                                         </div>
                                     ))}
-
                                 </div>
                                 <div className="chat-box-bottom">
+                                    <div
+                                        className="emoji-picker-container"
+                                        ref={emojiPickerRef}
+                                    >
+                                        <button
+                                            className={`emoji-btn${showEmojiPicker ? " active" : ""}`}
+                                            type="button"
+                                            onClick={() =>
+                                                setShowEmojiPicker((v) => !v)
+                                            }
+                                            title="Emoji"
+                                            aria-label="Open emoji picker"
+                                        >
+                                            😊
+                                        </button>
+                                        {showEmojiPicker && (
+                                            <div className="emoji-picker-popup">
+                                                <EmojiPicker
+                                                    onEmojiClick={onEmojiClick}
+                                                    height={380}
+                                                    width={300}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <textarea
-                                        placeholder="write something...!"
-                                        className="chat-message-input" onChange={(event) => setNewMessage(event.target.value)} value={newMessage}
-                                    ></textarea>
-                                    <button className="chat-box-button" onClick={handleClick}>send</button>
-                                </div></>) : (<span className="no-conversation">Open a conversation to start a chat</span>)
-                        }
+                                        ref={inputRef}
+                                        placeholder="Write something...!"
+                                        className="chat-message-input"
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        value={newMessage}
+                                    />
+                                    <button
+                                        className="chat-box-button"
+                                        onClick={handleSend}
+                                    >
+                                        Send
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <span className="no-conversation">
+                                Open a conversation to start a chat
+                            </span>
+                        )}
                     </div>
                 </div>
                 <div className="chat-online">
                     <div className="chat-online-wrapper">
-                        <ChatOnline onlineUsers={onlineUsers} currentId={user._id} setCurrentChat={setCurrentChat} />
+                        <ChatOnline
+                            onlineUsers={onlineUsers}
+                            currentId={user._id}
+                            setCurrentChat={setCurrentChat}
+                        />
                     </div>
                 </div>
             </div>

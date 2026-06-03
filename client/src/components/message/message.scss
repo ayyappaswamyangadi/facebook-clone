@@ -17,11 +17,13 @@
 }
 
 .message-text {
-    padding: 10px;
+    padding: 10px 14px;
     border-radius: 20px;
     background: #1877f2;
     color: white;
-    min-width: 300px;
+    max-width: 65%;
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 .message-bottom {

@@ -5,57 +5,7 @@
 
 .chat-menu {
     flex: 3.5;
-}
-
-.chat-menu-input {
-    width: 90%;
-    padding: 10px 0;
-    border: none;
-    border-bottom: 1px solid grey;
-}
-
-.chat-box {
-    flex: 5.5;
-}
-
-.chat-box-wrapper {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-.chat-box-top {
-    height: 100%;
-    overflow-y: scroll;
-    padding-right: 10px;
-}
-
-.chat-box-bottom {
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-}
-
-.chat-message-input {
-    width: 70%;
-    height: 90px;
-    padding: 10px;
-    outline: none;
-}
-
-.chat-box-button {
-    width: 70px;
-    height: 40px;
-    border: none;
-    border-radius: 5px;
-    background-color: cadetblue;
-    cursor: pointer;
-    color: white;
-}
-
-.chat-online {
-    flex: 3;
+    border-right: 1px solid #e4e6e9;
 }
 
 .chat-menu-wrapper,
@@ -63,12 +13,205 @@
 .chat-online-wrapper {
     padding: 10px;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-menu-input {
+    width: 90%;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1px solid grey;
+    outline: none;
+    font-size: 14px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.chat-box {
+    flex: 5.5;
+}
+
+.chat-box-wrapper {
+    position: relative;
+}
+
+.chat-box-top {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.chat-box-bottom {
+    flex-shrink: 0;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-top: 1px solid #e4e6e9;
+}
+
+.chat-message-input {
+    flex: 1;
+    min-height: 60px;
+    max-height: 120px;
+    padding: 10px;
+    outline: none;
+    border: 1px solid #ccd0d5;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.chat-box-button {
+    width: 70px;
+    height: 40px;
+    border: none;
+    border-radius: 5px;
+    background-color: #1877f2;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+
+    &:hover {
+        background-color: #166fe5;
+    }
+}
+
+.chat-online {
+    flex: 3;
+    border-left: 1px solid #e4e6e9;
 }
 
 .no-conversation {
     position: absolute;
-    top: 10%;
-    font-size: 50px;
-    color: rgb(225, 222, 222);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    color: rgb(200, 200, 200);
     cursor: default;
+    text-align: center;
+    width: 80%;
+}
+
+/* ── Emoji Picker ─────────────────────────────────────────── */
+
+.emoji-picker-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.emoji-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 50%;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.15s;
+
+    &:hover {
+        background: #e4e6e9;
+    }
+
+    &.active {
+        background: #dce8fd;
+    }
+}
+
+.emoji-picker-popup {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    z-index: 200;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* ── Mobile Responsive ────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .messenger {
+        flex-direction: column;
+        height: auto;
+        min-height: calc(100vh - 70px);
+    }
+
+    .chat-menu {
+        flex: none;
+        height: 180px;
+        overflow-y: auto;
+        border-right: none;
+        border-bottom: 1px solid #e4e6e9;
+    }
+
+    .chat-menu-wrapper {
+        height: 180px;
+    }
+
+    .chat-box {
+        flex: 1;
+    }
+
+    .chat-box-wrapper {
+        height: calc(100vh - 70px - 180px);
+        min-height: 300px;
+    }
+
+    .chat-online {
+        display: none;
+    }
+
+    .no-conversation {
+        font-size: 18px;
+    }
+
+    .emoji-picker-popup {
+        left: 0;
+        right: auto;
+
+        // Prevent overflow on very small screens
+        .EmojiPickerReact {
+            width: min(300px, 90vw) !important;
+        }
+    }
+
+    .chat-message-input {
+        min-height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-menu {
+        height: 150px;
+    }
+
+    .chat-menu-wrapper {
+        height: 150px;
+    }
+
+    .chat-box-wrapper {
+        height: calc(100vh - 70px - 150px);
+    }
+
+    .emoji-picker-popup {
+        position: fixed;
+        bottom: 80px;
+        left: 8px;
+        right: 8px;
+
+        .EmojiPickerReact {
+            width: 100% !important;
+        }
+    }
 }

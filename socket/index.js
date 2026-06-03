@@ -7,8 +7,9 @@ const io = require("socket.io")(8900, {
 let users = [];
 
 const addUser = (userId, socketId) => {
-  !users.some((user) => user.userId === userId) &&
+  if (!users.some((user) => user.userId === userId)) {
     users.push({ userId, socketId });
+  }
 };
 
 const removeUser = (socketId) => {
@@ -21,25 +22,22 @@ const getUser = (userId) => {
 
 io.on("connection", (socket) => {
   console.log("a user connected.");
-  // io.emit("welcome", "Hello, this is socket server");
 
-  //take userId and socketId from user
   socket.on("addUser", (userId) => {
     addUser(userId, socket.id);
     io.emit("getUsers", users);
   });
 
-  //send and get message
   socket.on("sendMessage", ({ userId, receiverId, text }) => {
-    const user = getUser(receiverId);
-    io.to(user.socketId).emit("getMessage", {
-      userId,
-      text,
-    });
+    const receiver = getUser(receiverId);
+    // Only deliver if receiver is currently online
+    if (receiver) {
+      io.to(receiver.socketId).emit("getMessage", { userId, text });
+    }
   });
 
   socket.on("disconnect", () => {
-    console.log("a user disconnected");
+    console.log("a user disconnected.");
     removeUser(socket.id);
     io.emit("getUsers", users);
   });
