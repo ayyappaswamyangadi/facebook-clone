@@ -36,6 +36,57 @@
     position: relative;
 }
 
+/* Chat header with partner info and close button */
+.chat-box-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+    border-bottom: 1px solid #e4e6e9;
+    margin-bottom: 4px;
+}
+
+.chat-box-header-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-box-header-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-box-header-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #050505;
+}
+
+.chat-box-close-btn {
+    background: #e4e6e9;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #65676b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.12s;
+
+    &:hover {
+        background: #d8dadf;
+        color: #050505;
+    }
+}
+
 .chat-box-top {
     flex: 1;
     overflow-y: auto;

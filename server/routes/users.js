@@ -9,16 +9,17 @@ router.put("/:id", verify, async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       req.body.password = await bcrypt.hash(req.body.password, salt);
     } catch (err) {
-      return res.status(500).json(err);
+      return res.status(500).json("Failed to hash password.");
     }
   }
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, {
-      $set: req.body,
-    });
+    await User.findByIdAndUpdate(req.params.id, { $set: req.body }, { runValidators: true, new: true });
     res.status(200).json("account has been updated");
   } catch (err) {
-    return res.status(500).json(err);
+    if (err.code === 11000) {
+      return res.status(400).json("Username or email is already taken.");
+    }
+    return res.status(500).json(err.message || "Failed to update account.");
   }
 });
 
@@ -55,7 +56,6 @@ router.get("/", async (req, res) => {
       : await User.findOne({ userName: userName });
     const { password, updatedAt, ...other } = user._doc;
     res.status(200).json(other);
-    res.send(other);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -114,6 +114,22 @@ router.put("/:id/unfollow", async (req, res) => {
   }
 });
 
+//get followers list
+router.get("/followers/:userId", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    const followers = await Promise.all(
+      user.followers.map((id) => User.findById(id))
+    );
+    const followerList = followers
+      .filter(Boolean)
+      .map(({ _id, userName, profilePicture }) => ({ _id, userName, profilePicture }));
+    res.status(200).json(followerList);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 //get following friends
 router.get("/friends/:userId", async (req, res) => {
   try {
@@ -132,10 +148,6 @@ router.get("/friends/:userId", async (req, res) => {
   } catch (error) {
     res.status(500).json(error);
   }
-});
-
-router.get("/", (req, res) => {
-  res.send("This is the users page");
 });
 
 module.exports = router;

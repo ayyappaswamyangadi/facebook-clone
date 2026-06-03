@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#e4e6eb"/>
+  <g transform="translate(120, 55)">
+    <rect x="0" y="18" width="60" height="46" rx="6" fill="#bcc0c4"/>
+    <circle cx="30" cy="41" r="13" fill="#e4e6eb"/>
+    <circle cx="30" cy="41" r="9" fill="#bcc0c4"/>
+    <rect x="44" y="10" width="16" height="10" rx="3" fill="#bcc0c4"/>
+    <rect x="8" y="10" width="18" height="12" rx="3" fill="#bcc0c4"/>
+  </g>
+  <text x="150" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#65676b">Image not available</text>
+</svg>

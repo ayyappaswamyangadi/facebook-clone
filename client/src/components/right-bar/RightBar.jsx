@@ -93,7 +93,12 @@ const RightBar = ({ user }) => {
                     (
                         <Link to={"/profile/" + friend.userName} className="friendListLink">
                             <div className="right-bar-following">
-                                <img src={friend.profilePicture ? (friend.profilePicture.startsWith('http') ? friend.profilePicture : public_folder_path + "profiles/" + friend.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt={friend.userName} className="right-bar-following-img" />
+                                <img
+                                    src={friend.profilePicture ? (friend.profilePicture.startsWith('http') ? friend.profilePicture : public_folder_path + "profiles/" + friend.profilePicture) : public_folder_path + "profiles/no-avatar.png"}
+                                    alt=""
+                                    className="right-bar-following-img"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = public_folder_path + "profiles/no-avatar.png"; }}
+                                />
                                 <span className="right-bar-following-name">{friend.userName}</span>
                             </div>
                         </Link>

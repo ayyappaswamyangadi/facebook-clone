@@ -4,6 +4,7 @@
     -webkit-box-shadow: 0 0 16px -8px rgba(0, 0, 0, 0.68);
     box-shadow: 0 0 16px -8px rgba(0, 0, 0, 0.68);
     margin: 30px 0;
+    position: relative;
 }
 
 .post-wrapper {
@@ -26,16 +27,13 @@
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    text-decoration: none;
 }
 
 .post-user-name {
     font-size: 15px;
     font-weight: 500;
     margin: 0 10px;
-    text-decoration: none;
 }
-
 
 .post-links {
     text-decoration: none;
@@ -48,10 +46,101 @@
 
 .post-date {
     font-size: 12px;
+    color: #65676b;
 }
+
+/* ── 3-dot menu ───────────────────────────────────────────── */
+
+.post-top-right {
+    position: relative;
+    cursor: pointer;
+    color: #65676b;
+    display: flex;
+    align-items: center;
+}
+
+.post-menu-trigger {
+    border-radius: 50%;
+    padding: 4px;
+    transition: background 0.12s;
+
+    &:hover {
+        background: #f0f2f5;
+    }
+}
+
+.post-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    min-width: 160px;
+    padding: 4px 0;
+    overflow: hidden;
+}
+
+.post-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    color: #050505;
+    text-align: left;
+    transition: background 0.12s;
+
+    &:hover {
+        background: #f0f2f5;
+    }
+
+    &--danger {
+        color: #e41e3f;
+    }
+}
+
+/* ── Post center ──────────────────────────────────────────── */
 
 .post-center {
     margin: 20px 0;
+}
+
+/* Tagged friends line */
+.post-tags {
+    font-size: 14px;
+    color: #65676b;
+    margin: 4px 0 2px;
+}
+
+.post-tags-label {
+    color: #65676b;
+}
+
+.post-tag-link {
+    color: #1877f2;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+/* Location line */
+.post-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #65676b;
+    margin: 4px 0 2px;
 }
 
 .post-img {
@@ -60,6 +149,8 @@
     object-fit: contain;
     max-height: 500px;
 }
+
+/* ── Post bottom ──────────────────────────────────────────── */
 
 .post-bottom {
     display: flex;
@@ -77,6 +168,15 @@
     height: 24px;
     margin-right: 5px;
     cursor: pointer;
+    transition: transform 0.15s;
+
+    &:hover {
+        transform: scale(1.2);
+    }
+
+    &.liked-active {
+        filter: hue-rotate(200deg) saturate(2);
+    }
 }
 
 .heart-img {
@@ -96,7 +196,118 @@
     font-size: 15px;
 }
 
-/* ── Responsive ──────────────────────────────────────── */
+/* ── Edit modal ───────────────────────────────────────────── */
+
+.post-edit-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.post-edit-modal {
+    background: white;
+    border-radius: 12px;
+    width: 500px;
+    max-width: 100%;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+.post-edit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f2f5;
+
+    h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #050505;
+    }
+}
+
+.post-edit-close {
+    background: #e4e6e9;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #65676b;
+
+    &:hover {
+        background: #d8dadf;
+    }
+}
+
+.post-edit-form {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.post-edit-textarea {
+    width: 100%;
+    border: 1px solid #ccd0d5;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    resize: vertical;
+    box-sizing: border-box;
+
+    &:focus {
+        border-color: #1877f2;
+    }
+}
+
+.post-edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.post-edit-cancel {
+    padding: 8px 18px;
+    background: #e4e6e9;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #050505;
+
+    &:hover {
+        background: #d8dadf;
+    }
+}
+
+.post-edit-save {
+    padding: 8px 18px;
+    background: #1877f2;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    color: white;
+
+    &:hover {
+        background: #166fe5;
+    }
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 600px) {
     .post-wrapper {
@@ -105,5 +316,15 @@
 
     .post-img {
         max-height: 300px;
+    }
+
+    .post-edit-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .post-edit-modal {
+        width: 100%;
+        border-radius: 16px 16px 0 0;
     }
 }

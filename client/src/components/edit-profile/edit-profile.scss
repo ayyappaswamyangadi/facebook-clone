@@ -102,20 +102,24 @@
 .edit-cover-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: white;
   gap: 6px;
-  opacity: 0;
-  transition: opacity 0.2s;
+  opacity: 1;
+  transition: background 0.2s;
 
   span {
     font-size: 14px;
     font-weight: 600;
   }
+}
+
+.edit-cover-preview:hover .edit-cover-overlay {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* Avatar section */
@@ -210,6 +214,45 @@
   color: #65676b;
   text-align: right;
   margin-top: -3px;
+}
+
+.edit-section-divider {
+  margin: 18px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #f0f2f5;
+}
+
+.edit-optional {
+  font-size: 12px;
+  font-weight: 400;
+  color: #65676b;
+}
+
+.edit-password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    flex: 1;
+    padding-right: 40px;
+  }
+}
+
+.edit-password-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #65676b;
+  display: flex;
+  align-items: center;
+  padding: 0;
+
+  &:hover {
+    color: #050505;
+  }
 }
 
 .edit-error {

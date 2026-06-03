@@ -19,10 +19,8 @@ const NotificationsDropdown = ({ onClose }) => {
         const res = await axios.get("/notifications/" + user._id);
         setNotifications(res.data);
 
-        // Mark all as read
         await axios.put("/notifications/" + user._id + "/read-all");
 
-        // Fetch sender info
         const uniqueSenders = [...new Set(res.data.map((n) => n.senderId))];
         const infos = await Promise.all(
           uniqueSenders.map((id) => axios.get("/users?userId=" + id))
@@ -39,7 +37,6 @@ const NotificationsDropdown = ({ onClose }) => {
     fetchNotifications();
   }, [user._id]);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
@@ -78,8 +75,24 @@ const NotificationsDropdown = ({ onClose }) => {
     }
   };
 
+  // Navigate to the most relevant destination for each notification type
+  const getNotifLink = (notif, sender) => {
+    switch (notif.type) {
+      case "like":
+      case "comment":
+        // Navigate to own profile since the post belongs to the current user
+        return "/profile/" + user.userName;
+      case "follow":
+        return "/profile/" + (sender?.userName || "");
+      case "message":
+        return "/messenger";
+      default:
+        return "/profile/" + user.userName;
+    }
+  };
+
   return (
-    <div className="notif-dropdown" ref={ref}>
+    <div className="notif-dropdown" ref={ref} onClick={(e) => e.stopPropagation()}>
       <div className="notif-header">
         <h3>Notifications</h3>
         <button onClick={onClose}>
@@ -96,37 +109,39 @@ const NotificationsDropdown = ({ onClose }) => {
         <ul className="notif-list">
           {notifications.map((notif) => {
             const sender = senderMap[notif.senderId];
+            const link = getNotifLink(notif, sender);
             return (
               <li
                 key={notif._id}
                 className={`notif-item ${!notif.read ? "unread" : ""}`}
               >
                 <Link
-                  to={`/profile/${sender?.userName || ""}`}
+                  to={link}
                   onClick={onClose}
-                  className="notif-avatar-link"
+                  className="notif-item-link"
                 >
                   <div className="notif-avatar-wrapper">
                     <img
                       src={
                         sender?.profilePicture
-                          ? public_folder + "profiles/" + sender.profilePicture
+                          ? (sender.profilePicture.startsWith("http") ? sender.profilePicture : public_folder + "profiles/" + sender.profilePicture)
                           : public_folder + "profiles/no-avatar.png"
                       }
-                      alt={sender?.userName}
+                      alt=""
                       className="notif-avatar"
+                      onError={(e) => { e.target.onerror = null; e.target.src = public_folder + "profiles/no-avatar.png"; }}
                     />
                     {typeIcon(notif.type)}
                   </div>
+                  <div className="notif-content">
+                    <p className="notif-text">
+                      {typeText(notif.type, sender?.userName || "Someone")}
+                    </p>
+                    <span className="notif-time">
+                      {moment(notif.createdAt).fromNow()}
+                    </span>
+                  </div>
                 </Link>
-                <div className="notif-content">
-                  <p className="notif-text">
-                    {typeText(notif.type, sender?.userName || "Someone")}
-                  </p>
-                  <span className="notif-time">
-                    {moment(notif.createdAt).fromNow()}
-                  </span>
-                </div>
                 {!notif.read && <div className="notif-unread-dot" />}
               </li>
             );
