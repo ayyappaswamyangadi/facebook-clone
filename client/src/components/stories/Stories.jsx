@@ -62,9 +62,9 @@ const Stories = () => {
       let img = "";
       if (storyFile) {
         const data = new FormData();
-        data.append("file", storyFile, Date.now() + "_" + storyFile.name);
-        const uploadRes = await axios.post("/upload/story", data);
-        img = "stories/" + uploadRes.data.filename;
+        data.append("file", storyFile);
+        const uploadRes = await axios.post("/upload", data);
+        img = uploadRes.data;
       }
       await axios.post("/stories", {
         userId: user._id,
@@ -96,6 +96,7 @@ const Stories = () => {
 
   const storySrc = (story) => {
     if (!story.img) return null;
+    if (story.img.startsWith("http")) return story.img;
     return story.img.startsWith("stories/")
       ? public_folder + story.img
       : public_folder + "stories/" + story.img;

@@ -1,3 +1,11 @@
 .home-container {
   display: flex;
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .home-container {
+    flex-direction: column;
+  }
+}

@@ -119,3 +119,11 @@
   cursor: pointer;
   outline: none;
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .right-bar {
+    display: none;
+  }
+}
