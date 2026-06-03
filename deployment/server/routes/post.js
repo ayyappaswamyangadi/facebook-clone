@@ -3,6 +3,8 @@ const Post = require("../models/Post");
 const User = require("../models/User");
 const { verify } = require("./auth");
 
+//connect mysql db to node js using express js framework?
+
 //create a post
 post.post("/", async (req, res) => {
   const newPost = new Post(req.body);
@@ -101,3 +103,5 @@ post.get("/", (req, res) => {
   res.send("I am in post page now");
 });
 module.exports = post;
+
+

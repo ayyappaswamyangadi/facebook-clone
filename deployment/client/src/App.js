@@ -29,7 +29,7 @@ function App() {
           />
 
           <Route
-            path="/messenger"
+            path="messenger/"
             element={user ? <Messenger /> : <Navigate to="/" replace />}
           />
 

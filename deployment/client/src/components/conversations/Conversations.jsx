@@ -1,49 +1,34 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import "./conversation.scss";
+import axios from "axios"
+import { useEffect, useState } from "react"
+import "./conversation.scss"
 
 const Conversations = ({ conversation, currentUser }) => {
-  const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
-  const [friend, setFriend] = useState(null);
+    const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
-  useEffect(() => {
-    const friendId = conversation.members.find(
-      (id) => id !== currentUser._id
-    );
-    if (!friendId) return;
+    const [user, setUser] = useState(null);
 
-    const getUser = async () => {
-      try {
-        const res = await axios.get("/users?userId=" + friendId);
-        setFriend(res.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    getUser();
-  }, [currentUser, conversation]);
 
-  return (
-    <div className="conversation">
-      <div className="conversation-avatar-wrapper">
-        <img
-          src={
-            friend?.profilePicture
-              ? public_folder + "profiles/" + friend.profilePicture
-              : public_folder + "profiles/no-avatar.png"
-          }
-          alt={friend?.userName || "user"}
-          className="conversation-image"
-        />
-      </div>
-      <div className="conversation-info">
-        <span className="conversation-name">{friend?.userName || "…"}</span>
-        <span className="conversation-desc">
-          {friend?.desc || "Say hello!"}
-        </span>
-      </div>
-    </div>
-  );
-};
 
-export default Conversations;
+    useEffect(() => {
+        const friendId = conversation.members.find((messageId) => messageId !== currentUser._id);
+        const getUser = async () => {
+            try {
+                const response = await axios("/users?userId=" + friendId)
+                setUser(response.data)
+            }
+            catch (error) {
+                console.log(error)
+            }
+        }
+        getUser()
+    }, [currentUser, conversation])
+    return (
+        <div className="conversation">
+            <img src={user?.profilePicture ? (user.profilePicture.startsWith('http') ? user.profilePicture : public_folder_path + "profiles/" + user.profilePicture) : public_folder_path + "profiles/no-avatar.png"} alt="" className="conversation-image" />
+            <span className="conversation-name">{user?.userName}</span>
+        </div>
+    )
+}
+export default Conversations
+
+//{user.profilePicture ? public_folder_path + "profiles/" + user.profilePicture : public_folder_path + "profiles/no-avatar.png"}

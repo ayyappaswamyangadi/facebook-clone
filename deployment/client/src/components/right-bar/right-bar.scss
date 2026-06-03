@@ -1,218 +1,121 @@
 .right-bar {
   overflow-y: auto;
-  height: calc(100vh - 56px);
+  height: calc(100vh - 50px);
   flex: 3.5;
   position: sticky;
-  top: 56px;
-  scrollbar-width: thin;
+  top: 50px;
 
-  &::-webkit-scrollbar { width: 5px; }
-  &::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.right-bar-wrapper {
-  padding: 16px 16px 20px 8px;
-}
-
-/* Birthday widget */
 .birthday-container {
   display: flex;
   align-items: center;
-  background: white;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 14px;
-  box-shadow: 0 0 12px -4px rgba(0,0,0,0.15);
+}
+
+.right-bar-wrapper {
+  padding: 20px 20px 0 0;
 }
 
 .birthday-img {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   margin-right: 10px;
 }
 
 .birthday-text {
-  font-size: 14px;
-  color: #050505;
-  line-height: 1.4;
+  font-weight: 300;
 }
 
-/* Ad */
 .right-bar-ad {
   width: 100%;
   border-radius: 10px;
-  margin: 14px 0;
+  margin: 30px 0;
 }
 
-/* Section title */
 .right-bar-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #050505;
-  margin: 16px 0 10px;
+  margin-bottom: 20px;
 }
 
-/* Online friends */
 .right-bar-friend-list {
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-.right-bar-online-item {
-  margin-bottom: 2px;
-}
-
-.right-bar-online-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #050505;
-  transition: background 0.12s;
-
-  &:hover {
-    background: #f0f2f5;
-  }
-}
-
-.right-bar-online-avatar-wrapper {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.right-bar-online-img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.right-bar-online-badge {
-  width: 10px;
-  height: 10px;
-  background: #42be65;
-  border-radius: 50%;
-  border: 2px solid white;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-}
-
-.right-bar-online-name {
-  font-size: 14px;
+.right-bar-title {
+  font-style: 18px;
   font-weight: 500;
+  margin-bottom: 10px;
 }
 
-.right-bar-no-friends {
-  font-size: 14px;
-  color: #65676b;
-  margin: 0;
-}
-
-/* Profile page: user info */
 .right-bar-info {
-  margin-bottom: 16px;
+  margin-bottom: 30px;
 }
 
 .right-bar-info-item {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .right-bar-info-key {
-  font-weight: 600;
-  color: #65676b;
-  min-width: 90px;
+  font-weight: 500;
+  margin-right: 15px;
+  color: cadetblue;
 }
 
 .right-bar-info-value {
-  color: #050505;
+  font-weight: 300;
 }
 
-/* Following grid */
 .right-bar-followings {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.right-bar-following-link {
-  text-decoration: none;
-  color: #050505;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .right-bar-following {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  margin-bottom: 20px;
   cursor: pointer;
-
-  &:hover .right-bar-following-name {
-    text-decoration: underline;
-  }
 }
 
 .right-bar-following-img {
-  width: 70px;
-  height: 70px;
+  width: 50px;
+  height: 50px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 5px;
 }
 
-.right-bar-following-name {
-  font-size: 12px;
-  font-weight: 600;
-  text-align: center;
-  color: #050505;
+.friendListLink {
+  text-decoration: none;
+  color: black;
+
+  &:link {
+    text-decoration: none;
+    color: black;
+  }
+
+  &:visited {
+    text-decoration: none;
+    color: black;
+  }
 }
 
-/* Follow button */
 .right-bar-follow-button {
-  margin: 16px 0 8px;
+  margin-top: 30px;
+  margin-bottom: 10px;
   border: none;
-  background-color: #1877f2;
+  background-color: #1872f2;
   color: white;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border-radius: 5px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  font-weight: 700;
+  font-style: 16px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #166fe5;
-  }
-}
-
-/* ── Responsive ────────────────────────────────────────────── */
-
-/* Tablet (≤1024px): hide from home (handled in Home.scss) */
-@media (max-width: 1024px) {
-  /* On Profile page right-bar is still shown but narrower */
-  .right-bar {
-    flex: 0 0 240px;
-  }
-  .right-bar-wrapper {
-    padding: 12px 10px 16px 8px;
-  }
-  .right-bar-followings {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Mobile (≤768px): hide */
-@media (max-width: 768px) {
-  .right-bar {
-    display: none;
-  }
+  outline: none;
 }

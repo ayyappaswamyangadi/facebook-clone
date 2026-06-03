@@ -4,20 +4,20 @@ const UserSchema = new mongoose.Schema(
   {
     userName: {
       type: String,
-      required: true,
+      require: true,
       min: 3,
       max: 20,
       unique: true,
     },
     email: {
       type: String,
-      required: true,
+      require: true,
       max: 50,
       unique: true,
     },
     password: {
       type: String,
-      required: true,
+      require: true,
       min: 6,
     },
     profilePicture: {
@@ -59,6 +59,7 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       enum: [1, 2, 3],
     },
+    // time: { type: Date, default: Date.now() },
   },
   { timestamps: true }
 );
