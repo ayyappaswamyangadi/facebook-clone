@@ -30,6 +30,11 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+console.log("Cloudinary config loaded:", {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "MISSING",
+  api_key: process.env.CLOUDINARY_API_KEY ? "SET" : "MISSING",
+  api_secret: process.env.CLOUDINARY_API_SECRET ? "SET" : "MISSING",
+});
 
 //middleware
 app.use(express.json());
@@ -60,13 +65,17 @@ const storage = new CloudinaryStorage({
 });
 
 const uploads = multer({ storage });
-app.post("/upload", uploads.single("file"), (req, res) => {
-  try {
+app.post("/upload", (req, res) => {
+  uploads.single("file")(req, res, (err) => {
+    if (err) {
+      console.error("Upload error:", err);
+      return res.status(500).json(err.message || "Upload failed");
+    }
+    if (!req.file) {
+      return res.status(400).json("No file received");
+    }
     return res.status(200).json(req.file.path);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
+  });
 });
 
 app.get("/", (req, res) => {
