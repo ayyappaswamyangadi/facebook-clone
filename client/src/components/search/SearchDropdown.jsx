@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Search } from "@mui/icons-material";
+import { Spinner } from "../loaders/Loaders";
 import "./search.scss";
 
 const SearchDropdown = ({ onClose }) => {
@@ -56,11 +57,7 @@ const SearchDropdown = ({ onClose }) => {
         )}
       </div>
 
-      {loading && (
-        <div className="search-loading">
-          <span>Searching…</span>
-        </div>
-      )}
+      {loading && <Spinner size="sm" />}
 
       {!loading && results.length > 0 && (
         <ul className="search-results">
