@@ -16,7 +16,7 @@ const RightBar = ({ user }) => {
     const [loadingFriends, setLoadingFriends] = useState(false);
 
     useEffect(() => {
-        if (!user._id) return;
+        if (!user?._id) return;
         const getFriends = async () => {
             setLoadingFriends(true);
             try {
