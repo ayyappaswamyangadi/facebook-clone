@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { AuthContext } from "../context/AuthContext"
 import { Add, Remove } from "@mui/icons-material"
+import { RightBarSkeleton } from "../loaders/Loaders"
 import "./right-bar.scss"
 
 const RightBar = ({ user }) => {
@@ -12,14 +13,19 @@ const RightBar = ({ user }) => {
     const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
     const [friends, setFriends] = useState([]);
+    const [loadingFriends, setLoadingFriends] = useState(false);
 
     useEffect(() => {
+        if (!user._id) return;
         const getFriends = async () => {
+            setLoadingFriends(true);
             try {
                 const friendList = await axios.get("/users/friends/" + user._id);
                 setFriends(friendList.data)
             } catch (error) {
                 console.log(error)
+            } finally {
+                setLoadingFriends(false);
             }
         }
         getFriends()
@@ -88,22 +94,25 @@ const RightBar = ({ user }) => {
                     </div>
                 </div>
                 <h4 className="right-bar-title">Following</h4>
-                <div className="right-bar-followings">
-                    {friends.map((friend) =>
-                    (
-                        <Link to={"/profile/" + friend.userName} className="friendListLink">
-                            <div className="right-bar-following">
-                                <img
-                                    src={friend.profilePicture ? (friend.profilePicture.startsWith('http') ? friend.profilePicture : public_folder_path + "profiles/" + friend.profilePicture) : public_folder_path + "profiles/no-avatar.png"}
-                                    alt=""
-                                    className="right-bar-following-img"
-                                    onError={(e) => { e.target.onerror = null; e.target.src = public_folder_path + "profiles/no-avatar.png"; }}
-                                />
-                                <span className="right-bar-following-name">{friend.userName}</span>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                {loadingFriends ? (
+                    <RightBarSkeleton count={4} />
+                ) : (
+                    <div className="right-bar-followings">
+                        {friends.map((friend) => (
+                            <Link key={friend._id} to={"/profile/" + friend.userName} className="friendListLink">
+                                <div className="right-bar-following">
+                                    <img
+                                        src={friend.profilePicture ? (friend.profilePicture.startsWith('http') ? friend.profilePicture : public_folder_path + "profiles/" + friend.profilePicture) : public_folder_path + "profiles/no-avatar.png"}
+                                        alt=""
+                                        className="right-bar-following-img"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = public_folder_path + "profiles/no-avatar.png"; }}
+                                    />
+                                    <span className="right-bar-following-name">{friend.userName}</span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </>
         )
     }

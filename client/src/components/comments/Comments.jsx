@@ -4,6 +4,7 @@ import axios from "axios";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Spinner } from "../loaders/Loaders";
 import "./comments.scss";
 
 const Comments = ({ postId, postOwnerId, onLoaded }) => {
@@ -14,10 +15,12 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
   const [commentUsers, setCommentUsers] = useState({});
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetchingComments, setFetchingComments] = useState(true);
 
   // Fetch comments for this post
   useEffect(() => {
     const fetchComments = async () => {
+      setFetchingComments(true);
       try {
         const res = await axios.get("/comments/" + postId);
         setComments(res.data);
@@ -35,6 +38,8 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
         setCommentUsers(map);
       } catch (err) {
         console.log(err);
+      } finally {
+        setFetchingComments(false);
       }
     };
     if (postId) fetchComments();
@@ -160,7 +165,9 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
 
       {/* Comment list */}
       <div className="comment-list">
-        {comments.map((comment) => {
+        {fetchingComments ? (
+          <Spinner size="sm" />
+        ) : comments.map((comment) => {
           const isOwn = comment.userId === currentUser._id;
           const liked = comment.likes.includes(currentUser._id);
           const u = commentUsers[comment.userId];

@@ -4,6 +4,7 @@ import moment from "moment";
 import { Link } from "react-router-dom";
 import { ThumbUp, Comment, PersonAdd, Close, NotificationsNone } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
+import { NotifSkeleton } from "../loaders/Loaders";
 import "./notifications.scss";
 
 const NotificationsDropdown = ({ onClose }) => {
@@ -11,10 +12,12 @@ const NotificationsDropdown = ({ onClose }) => {
   const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
   const [notifications, setNotifications] = useState([]);
   const [senderMap, setSenderMap] = useState({});
+  const [loading, setLoading] = useState(true);
   const ref = useRef();
 
   useEffect(() => {
     const fetchNotifications = async () => {
+      setLoading(true);
       try {
         const res = await axios.get("/notifications/" + user._id);
         setNotifications(res.data);
@@ -32,6 +35,8 @@ const NotificationsDropdown = ({ onClose }) => {
         setSenderMap(map);
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchNotifications();
@@ -100,7 +105,9 @@ const NotificationsDropdown = ({ onClose }) => {
         </button>
       </div>
 
-      {notifications.length === 0 ? (
+      {loading ? (
+        <NotifSkeleton count={4} />
+      ) : notifications.length === 0 ? (
         <div className="notif-empty">
           <NotificationsNone style={{ fontSize: 48, color: "#bcc0c4" }} />
           <p>No notifications yet</p>

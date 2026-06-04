@@ -5,6 +5,7 @@ import { AuthContext } from "../../components/context/AuthContext";
 import Conversations from "../../components/conversations/Conversations";
 import Message from "../../components/message/Message";
 import Topbar from "../../components/topbar/Topbar";
+import { ConversationSkeleton, Spinner } from "../../components/loaders/Loaders";
 import "./messenger.scss";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -12,8 +13,10 @@ import EmojiPicker from "emoji-picker-react";
 
 const Messenger = () => {
     const [conversations, setConversation] = useState([]);
+    const [loadingConversations, setLoadingConversations] = useState(true);
     const [currentChat, setCurrentChat] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [loadingMessages, setLoadingMessages] = useState(false);
     const [newMessage, setNewMessage] = useState("");
     const [arrivalMessage, setArrivalMessage] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState([]);
@@ -77,11 +80,14 @@ const Messenger = () => {
 
     useEffect(() => {
         const getConversations = async () => {
+            setLoadingConversations(true);
             try {
                 const response = await axios.get("/conversations/" + user._id);
                 setConversation(response.data);
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoadingConversations(false);
             }
         };
         getConversations();
@@ -89,11 +95,15 @@ const Messenger = () => {
 
     useEffect(() => {
         const getMessages = async () => {
+            if (!currentChat) return;
+            setLoadingMessages(true);
             try {
-                const response = await axios.get("/messages/" + currentChat?._id);
+                const response = await axios.get("/messages/" + currentChat._id);
                 setMessages(response.data);
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoadingMessages(false);
             }
         };
         getMessages();
@@ -212,17 +222,26 @@ const Messenger = () => {
                             placeholder="Search for friends"
                             className="chat-menu-input"
                         />
-                        {conversations.map((conversation) => (
-                            <div
-                                key={conversation._id}
-                                onClick={() => setCurrentChat(conversation)}
-                            >
-                                <Conversations
-                                    conversation={conversation}
-                                    currentUser={user}
-                                />
-                            </div>
-                        ))}
+                        {loadingConversations ? (
+                            <>
+                                <ConversationSkeleton />
+                                <ConversationSkeleton />
+                                <ConversationSkeleton />
+                                <ConversationSkeleton />
+                            </>
+                        ) : (
+                            conversations.map((conversation) => (
+                                <div
+                                    key={conversation._id}
+                                    onClick={() => setCurrentChat(conversation)}
+                                >
+                                    <Conversations
+                                        conversation={conversation}
+                                        currentUser={user}
+                                    />
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
                 <div className="chat-box">
@@ -252,22 +271,29 @@ const Messenger = () => {
                                     </button>
                                 </div>
                                 <div className="chat-box-top">
-                                    {messages.map((message) => (
-                                        <div
-                                            ref={scrollRef}
-                                            key={message._id || message.createdAt}
-                                        >
-                                            <Message
-                                                message={message}
-                                                own={message.sender === user._id}
-                                                senderPicture={
-                                                    message.sender === user._id
-                                                        ? getProfilePic(user)
-                                                        : getProfilePic(chatPartner)
-                                                }
-                                            />
+                                    {loadingMessages ? (
+                                        <div className="messages-loading">
+                                            <Spinner size="md" />
+                                            <span>Loading messages…</span>
                                         </div>
-                                    ))}
+                                    ) : (
+                                        messages.map((message) => (
+                                            <div
+                                                ref={scrollRef}
+                                                key={message._id || message.createdAt}
+                                            >
+                                                <Message
+                                                    message={message}
+                                                    own={message.sender === user._id}
+                                                    senderPicture={
+                                                        message.sender === user._id
+                                                            ? getProfilePic(user)
+                                                            : getProfilePic(chatPartner)
+                                                    }
+                                                />
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                                 <div className="chat-box-bottom">
                                     <div

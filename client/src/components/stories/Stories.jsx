@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Add, Close, PlayArrow } from "@mui/icons-material";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { StoriesBarSkeleton } from "../loaders/Loaders";
 import "./stories.scss";
 
 const Stories = () => {
@@ -14,12 +15,14 @@ const Stories = () => {
   const [storyFile, setStoryFile] = useState(null);
   const [storyDesc, setStoryDesc] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [loadingStories, setLoadingStories] = useState(true);
   const fileRef = useRef();
   const progressTimer = useRef();
 
   // Fetch timeline stories
   useEffect(() => {
     const fetchStories = async () => {
+      setLoadingStories(true);
       try {
         const res = await axios.get("/stories/timeline/" + user._id);
         setStoryGroups(res.data);
@@ -36,6 +39,8 @@ const Stories = () => {
         setUserMap(map);
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoadingStories(false);
       }
     };
     fetchStories();
@@ -102,6 +107,8 @@ const Stories = () => {
       ? public_folder + story.img
       : public_folder + "stories/" + story.img;
   };
+
+  if (loadingStories) return <StoriesBarSkeleton count={5} />;
 
   return (
     <>

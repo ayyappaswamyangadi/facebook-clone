@@ -6,6 +6,7 @@ import moment from 'moment'
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Comments from "../comments/Comments";
+import { PostAuthorSkeleton } from "../loaders/Loaders";
 
 const PF = process.env.REACT_APP_PUBLIC_FOLDER;
 const NO_AVATAR = PF + "profiles/no-avatar.png";
@@ -14,6 +15,7 @@ const NO_IMAGE = "/assets/no-image.svg";
 const Post = ({ post, onDelete }) => {
     const { user: currentUser } = useContext(AuthContext)
     const [user, setUser] = useState({});
+    const [loadingUser, setLoadingUser] = useState(true);
     const [like, setLike] = useState(post.likes.length)
     const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id))
     const [showComments, setShowComments] = useState(false)
@@ -28,8 +30,15 @@ const Post = ({ post, onDelete }) => {
 
     useEffect(() => {
         const fetchUser = async () => {
-            const res = await axios.get(`/users?userId=${post.userId}`)
-            setUser(res.data)
+            setLoadingUser(true);
+            try {
+                const res = await axios.get(`/users?userId=${post.userId}`)
+                setUser(res.data)
+            } catch (err) {
+                console.log(err)
+            } finally {
+                setLoadingUser(false);
+            }
         }
         fetchUser()
     }, [post.userId])
@@ -97,18 +106,24 @@ const Post = ({ post, onDelete }) => {
             <div className="post-wrapper">
                 <div className="post-top">
                     <div className="post-top-left">
-                        <Link to={`/profile/${user.userName}`} className="post-links">
-                            <img
-                                src={profileSrc}
-                                alt=""
-                                className="post-profile-img"
-                                onError={(e) => { e.target.onerror = null; e.target.src = NO_AVATAR; }}
-                            />
-                        </Link>
-                        <Link to={`/profile/${user.userName}`} className="post-links">
-                            <span className="post-user-name">{displayName}</span>
-                        </Link>
-                        <span className="post-date">{moment.parseZone(post.createdAt).fromNow()}</span>
+                        {loadingUser ? (
+                            <PostAuthorSkeleton />
+                        ) : (
+                            <>
+                                <Link to={`/profile/${user.userName}`} className="post-links">
+                                    <img
+                                        src={profileSrc}
+                                        alt=""
+                                        className="post-profile-img"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = NO_AVATAR; }}
+                                    />
+                                </Link>
+                                <Link to={`/profile/${user.userName}`} className="post-links">
+                                    <span className="post-user-name">{displayName}</span>
+                                </Link>
+                                <span className="post-date">{moment.parseZone(post.createdAt).fromNow()}</span>
+                            </>
+                        )}
                     </div>
 
                     {isOwnPost && (

@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Close, PersonAdd, Check } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
+import { Spinner } from "../loaders/Loaders";
 import "./friends-dropdown.scss";
 
 const FO = process.env.REACT_APP_PUBLIC_FOLDER;
@@ -18,10 +19,12 @@ const FriendsDropdown = ({ onClose }) => {
   const [followers, setFollowers] = useState([]);
   const [friends, setFriends] = useState([]);
   const [accepting, setAccepting] = useState({});
+  const [loading, setLoading] = useState(true);
   const ref = useRef();
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       try {
         const [folRes, friRes] = await Promise.all([
           axios.get("/users/followers/" + user._id),
@@ -34,6 +37,8 @@ const FriendsDropdown = ({ onClose }) => {
         setFriends(friRes.data);
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
     };
     load();
@@ -97,7 +102,9 @@ const FriendsDropdown = ({ onClose }) => {
       </div>
 
       <div className="friends-dd-body">
-        {tab === "requests" ? (
+        {loading ? (
+          <Spinner size="sm" />
+        ) : tab === "requests" ? (
           followers.length === 0 ? (
             <div className="friends-dd-empty">
               <PersonAdd style={{ fontSize: 40, color: "#bcc0c4" }} />

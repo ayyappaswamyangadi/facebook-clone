@@ -1,0 +1,264 @@
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Base shimmer ───────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* ── Spinner ────────────────────────────────────────── */
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e4e6eb;
+  border-top-color: #1877f2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+
+  &--sm {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+  }
+
+  &--lg {
+    width: 52px;
+    height: 52px;
+    border-width: 4px;
+  }
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+
+  &--fullpage {
+    position: fixed;
+    inset: 0;
+    background: #f0f2f5;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 16px;
+
+    .spinner-label {
+      font-size: 15px;
+      color: #65676b;
+      font-weight: 500;
+    }
+  }
+}
+
+/* ── Post Skeleton ──────────────────────────────────── */
+.post-skeleton {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+
+  &__name  { width: 130px; height: 14px; }
+  &__date  { width: 80px;  height: 10px; }
+
+  &__text-1 { width: 100%; height: 14px; margin-bottom: 8px; }
+  &__text-2 { width: 68%;  height: 14px; margin-bottom: 16px; }
+
+  &__image {
+    width: 100%;
+    height: 280px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 20px;
+  }
+
+  &__actions-btn { width: 90px; height: 12px; }
+}
+
+/* ── Story Skeleton ─────────────────────────────────── */
+.story-skeleton-bar {
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.story-skeleton {
+  width: 115px;
+  height: 200px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Conversation Skeleton ──────────────────────────── */
+.conversation-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 10px;
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    height: 14px;
+    border-radius: 4px;
+    flex: 1;
+  }
+}
+
+/* ── Profile Header Skeleton ────────────────────────── */
+.profile-header-skeleton {
+  &__cover {
+    width: 100%;
+    height: 250px;
+    border-radius: 0;
+  }
+
+  &__avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin: -75px auto 12px;
+    display: block;
+    position: relative;
+    z-index: 1;
+    border: 4px solid white;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 16px;
+  }
+
+  &__name { width: 200px; height: 24px; border-radius: 4px; }
+  &__bio  { width: 260px; height: 14px; border-radius: 4px; }
+  &__btn  { width: 120px; height: 36px; border-radius: 8px; margin-top: 4px; }
+}
+
+/* ── RightBar Skeleton ──────────────────────────────── */
+.rightbar-skeleton {
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    &-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    &-name {
+      height: 14px;
+      border-radius: 4px;
+      flex: 1;
+    }
+  }
+}
+
+/* ── Notification Skeleton ──────────────────────────── */
+.notif-skeleton {
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f2f5;
+
+    &-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    &-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    &-text  { height: 14px; border-radius: 4px; }
+    &-time  { width: 70px; height: 10px; border-radius: 4px; }
+  }
+}
+
+/* ── Post author mini-skeleton (inside post card) ───── */
+.post-author-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  &__name { width: 110px; height: 13px; border-radius: 4px; }
+  &__date { width: 70px;  height: 10px; border-radius: 4px; }
+}
+
+/* ── Messages loading ───────────────────────────────── */
+.messages-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 12px;
+  color: #65676b;
+  font-size: 14px;
+}
