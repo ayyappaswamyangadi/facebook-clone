@@ -30,7 +30,10 @@ const Messenger = () => {
     const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
     useEffect(() => {
-        socket.current = io(process.env.REACT_APP_SOCKET_URL || "http://localhost:8900");
+        socket.current = io(process.env.REACT_APP_SOCKET_URL || "http://localhost:8900", {
+            reconnectionAttempts: 5,
+            reconnectionDelay: 3000,
+        });
 
         const handleGetMessage = (data) => {
             setArrivalMessage({
