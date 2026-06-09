@@ -74,7 +74,7 @@ const ImageCropModal = ({ imageSrc, aspect, title, onCrop, onCancel }) => {
       window.removeEventListener("touchmove", onMove);
       window.removeEventListener("touchend", onUp);
     };
-  }, [loaded, zoom, offset]); // re-register when layout deps change
+  }, [loaded, zoom, offset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onZoomChange = (e) => {
     const newZoom = Number(e.target.value);
