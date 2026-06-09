@@ -47,6 +47,20 @@ router.delete("/:id", async (req, res) => {
 //   }
 // });
 
+// search users by username
+router.get("/search", async (req, res) => {
+  const q = req.query.q;
+  if (!q || !q.trim()) return res.status(200).json([]);
+  try {
+    const users = await User.find({
+      userName: { $regex: q.trim(), $options: "i" },
+    }).select("_id userName profilePicture").limit(20);
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 router.get("/", async (req, res) => {
   const userId = req.query.userId;
   const userName = req.query.userName;

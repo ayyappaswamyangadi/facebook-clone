@@ -35,6 +35,10 @@ const NewsFeed = ({ userName }) => {
     setPosts((prev) => prev.filter((p) => p._id !== deletedId));
   };
 
+  const handleHide = (hiddenId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== hiddenId));
+  };
+
   return (
     <div className="news-feed">
       <div className="news-feed-wrapper">
@@ -48,7 +52,7 @@ const NewsFeed = ({ userName }) => {
           </>
         ) : posts.length > 0 ? (
           posts.map((post) => (
-            <Post key={post._id} post={post} onDelete={handleDelete} />
+            <Post key={post._id} post={post} onDelete={handleDelete} onHide={handleHide} />
           ))
         ) : (
           <center>No posts yet</center>

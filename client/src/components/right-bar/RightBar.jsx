@@ -1,19 +1,28 @@
 import OnlineFriend from "../online/OnlineFriend"
-import { Users } from "../../dummyData"
 import axios from "axios"
 import { useContext, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { AuthContext } from "../context/AuthContext"
-import { Add, Remove } from "@mui/icons-material"
+import { Add, Remove, LocationOn, Home, Favorite, People } from "@mui/icons-material"
 import { RightBarSkeleton } from "../loaders/Loaders"
 import "./right-bar.scss"
 
+const PF = process.env.REACT_APP_PUBLIC_FOLDER;
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E";
+
+const RELATIONSHIP_MAP = {
+    1: "Single",
+    2: "In a relationship",
+    3: "Married",
+};
+
 const RightBar = ({ user }) => {
     const { user: currentUser, dispatch } = useContext(AuthContext)
-    const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
     const [friends, setFriends] = useState([]);
     const [loadingFriends, setLoadingFriends] = useState(false);
+    const [onlineFriends, setOnlineFriends] = useState([]);
+    const [loadingOnline, setLoadingOnline] = useState(false);
 
     useEffect(() => {
         if (!user?._id) return;
@@ -31,6 +40,22 @@ const RightBar = ({ user }) => {
         getFriends()
     }, [user])
 
+    useEffect(() => {
+        if (user?._id) return;
+        const getOnlineFriends = async () => {
+            setLoadingOnline(true);
+            try {
+                const res = await axios.get("/users/friends/" + currentUser._id);
+                setOnlineFriends(res.data.slice(0, 10));
+            } catch (err) {
+                console.log(err);
+            } finally {
+                setLoadingOnline(false);
+            }
+        };
+        getOnlineFriends();
+    }, [currentUser._id, user]);
+
     const [followed, setFollowed] = useState(currentUser.following.includes(user?.id))
 
     const handleClick = async () => {
@@ -41,7 +66,6 @@ const RightBar = ({ user }) => {
             } else {
                 await axios.put("/users/" + user._id + "/follow", { userId: currentUser._id })
                 dispatch({ type: "FOLLOW", payload: user._id })
-
             }
         } catch (err) {
             console.log(err);
@@ -52,60 +76,87 @@ const RightBar = ({ user }) => {
     const HomeRightBar = () => {
         return (
             <>
-                <div className="birthday-container">
-                    <img src="/assets/gift.png" alt="" className="birthday-img" />
-                    <span className="birthday-text"><b>Appa</b>, <b>Amma</b> and <b>3 others</b> have their birthday today</span>
-                </div>
-                <img src="/assets/ad.png" alt="" className="right-bar-ad" />
-                <h4 className="right-bar-title">Online friends</h4>
+                <h4 className="right-bar-title">Online Friends</h4>
                 <ul className="right-bar-friend-list">
-                    {
-                        Users.map(user => (
-                            <OnlineFriend key={user.id} user={user} />
-
+                    {loadingOnline ? (
+                        <RightBarSkeleton count={4} />
+                    ) : onlineFriends.length === 0 ? (
+                        <li className="right-bar-no-friends">No friends yet</li>
+                    ) : (
+                        onlineFriends.map(friend => (
+                            <OnlineFriend key={friend._id} user={friend} />
                         ))
-                    }
+                    )}
                 </ul>
             </>
-
         )
     }
 
     const ProfileRightBar = () => {
+        const relationshipText = user.relationship
+            ? RELATIONSHIP_MAP[user.relationship] || String(user.relationship)
+            : null;
+
         return (
             <>
                 {user.userName !== currentUser.userName && (
                     <button className="right-bar-follow-button" onClick={handleClick}>
-                        {followed ? "unfollow" : "follow"} {followed ? <Remove /> : <Add />} </button>
+                        {followed ? "Unfollow" : "Follow"} {followed ? <Remove /> : <Add />}
+                    </button>
                 )}
                 <h4 className="right-bar-title">User Information</h4>
                 <div className="right-bar-info">
-                    <div className="right-bar-info-item">
-                        <span className="right-bar-info-key">City:</span>
-                        <span className="right-bar-info-value">{user.city}</span>
-                    </div>
-                    <div className="right-bar-info-item">
-                        <span className="right-bar-info-key">From:</span>
-                        <span className="right-bar-info-value">{user.from}</span>
-                    </div>
-                    <div className="right-bar-info-item">
-                        <span className="right-bar-info-key">Relationship:</span>
-                        <span className="right-bar-info-value">{user.relationship}</span>
-                    </div>
+                    {user.city && (
+                        <div className="right-bar-info-item">
+                            <LocationOn className="right-bar-info-icon" />
+                            <div className="right-bar-info-text">
+                                <span className="right-bar-info-key">City</span>
+                                <span className="right-bar-info-value">{user.city}</span>
+                            </div>
+                        </div>
+                    )}
+                    {user.from && (
+                        <div className="right-bar-info-item">
+                            <Home className="right-bar-info-icon" />
+                            <div className="right-bar-info-text">
+                                <span className="right-bar-info-key">From</span>
+                                <span className="right-bar-info-value">{user.from}</span>
+                            </div>
+                        </div>
+                    )}
+                    {relationshipText && (
+                        <div className="right-bar-info-item">
+                            <Favorite className="right-bar-info-icon" />
+                            <div className="right-bar-info-text">
+                                <span className="right-bar-info-key">Relationship</span>
+                                <span className="right-bar-info-value">{relationshipText}</span>
+                            </div>
+                        </div>
+                    )}
+                    {!user.city && !user.from && !relationshipText && (
+                        <p className="right-bar-info-empty">No information added yet.</p>
+                    )}
                 </div>
-                <h4 className="right-bar-title">Following</h4>
+                <h4 className="right-bar-title">
+                    <People style={{ fontSize: 18, marginRight: 6, verticalAlign: "middle" }} />
+                    Following
+                </h4>
                 {loadingFriends ? (
                     <RightBarSkeleton count={4} />
+                ) : friends.length === 0 ? (
+                    <p className="right-bar-info-empty">Not following anyone yet.</p>
                 ) : (
                     <div className="right-bar-followings">
                         {friends.map((friend) => (
-                            <Link key={friend._id} to={"/profile/" + friend.userName} className="friendListLink">
+                            <Link key={friend._id} to={"/profile/" + friend.userName} className="right-bar-following-link">
                                 <div className="right-bar-following">
                                     <img
-                                        src={friend.profilePicture ? (friend.profilePicture.startsWith('http') ? friend.profilePicture : public_folder_path + "profiles/" + friend.profilePicture) : public_folder_path + "profiles/no-avatar.png"}
-                                        alt=""
+                                        src={friend.profilePicture
+                                            ? (friend.profilePicture.startsWith('http') ? friend.profilePicture : PF + "profiles/" + friend.profilePicture)
+                                            : PLACEHOLDER_AVATAR}
+                                        alt={friend.userName}
                                         className="right-bar-following-img"
-                                        onError={(e) => { e.target.onerror = null; e.target.src = public_folder_path + "profiles/no-avatar.png"; }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
                                     />
                                     <span className="right-bar-following-name">{friend.userName}</span>
                                 </div>
@@ -116,11 +167,13 @@ const RightBar = ({ user }) => {
             </>
         )
     }
+
     return (
         <div className="right-bar">
             <div className="right-bar-wrapper">
-                {user ?
-                    <ProfileRightBar key={friends.map((friend) => { return friend._id })} /> : <HomeRightBar key={Users.map((user) => { return user.id })} />
+                {user?._id
+                    ? <ProfileRightBar key={user._id} />
+                    : <HomeRightBar />
                 }
             </div>
         </div>

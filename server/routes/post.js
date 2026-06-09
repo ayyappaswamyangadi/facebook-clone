@@ -3,9 +3,7 @@ const Post = require("../models/Post");
 const User = require("../models/User");
 const { verify } = require("./auth");
 
-//connect mysql db to node js using express js framework?
-
-//create a post
+// create a post
 post.post("/", async (req, res) => {
   const newPost = new Post(req.body);
   try {
@@ -16,7 +14,69 @@ post.post("/", async (req, res) => {
   }
 });
 
-//update a post
+// search posts by description — must be before /:id
+post.get("/search", async (req, res) => {
+  const q = req.query.q;
+  if (!q || !q.trim()) return res.status(200).json([]);
+  try {
+    const posts = await Post.find({
+      desc: { $regex: q.trim(), $options: "i" },
+    }).sort({ createdAt: -1 }).limit(20);
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// get news feed posts
+post.get("/timeline/:userId", async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.params.userId);
+    const userId = String(currentUser._id);
+    const userPosts = await Post.find({ userId: currentUser._id, hiddenBy: { $ne: userId } });
+    const friendPosts = await Promise.all(
+      currentUser.following.map((friendId) => {
+        return Post.find({ userId: friendId, hiddenBy: { $ne: userId } });
+      })
+    );
+    res.status(200).json(userPosts.concat(...friendPosts));
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// get user's all posts
+post.get("/profile/:userName", async (req, res) => {
+  try {
+    const currentUser = await User.findOne({ userName: req.params.userName });
+    const userPosts = await Post.find({ userId: currentUser._id });
+    res.status(200).json(userPosts);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// get hidden posts for a user
+post.get("/hidden/:userId", async (req, res) => {
+  try {
+    const posts = await Post.find({ hiddenBy: req.params.userId }).sort({ createdAt: -1 });
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// get a single post — keep after named routes
+post.get("/:id", verify, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// update a post
 post.put("/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -31,7 +91,7 @@ post.put("/:id", async (req, res) => {
   }
 });
 
-//delete a post
+// delete a post
 post.delete("/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -46,7 +106,7 @@ post.delete("/:id", async (req, res) => {
   }
 });
 
-//like a post
+// like a post
 post.put("/:id/like", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -62,38 +122,28 @@ post.put("/:id/like", async (req, res) => {
   }
 });
 
-//get a post
-post.get("/:id", verify, async (req, res) => {
+// hide a post
+post.put("/:id/hide", async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
-    res.status(200).json(post);
+    const p = await Post.findById(req.params.id);
+    if (!p.hiddenBy.includes(req.body.userId)) {
+      await p.updateOne({ $push: { hiddenBy: req.body.userId } });
+      res.status(200).json("Post hidden");
+    } else {
+      res.status(200).json("Already hidden");
+    }
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-//get news feed posts
-post.get("/timeline/:userId", async (req, res) => {
+// unhide a post
+post.put("/:id/unhide", async (req, res) => {
   try {
-    const currentUser = await User.findById(req.params.userId);
-    const userPosts = await Post.find({ userId: currentUser._id });
-    const friendPosts = await Promise.all(
-      currentUser.following.map((friendId) => {
-        return Post.find({ userId: friendId });
-      })
-    );
-    res.status(200).json(userPosts.concat(...friendPosts));
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-//get user's all posts
-post.get("/profile/:userName", async (req, res) => {
-  try {
-    const currentUser = await User.findOne({ userName: req.params.userName });
-    const userPosts = await Post.find({ userId: currentUser._id });
-    res.status(200).json(userPosts);
+    await Post.findByIdAndUpdate(req.params.id, {
+      $pull: { hiddenBy: req.body.userId },
+    });
+    res.status(200).json("Post unhidden");
   } catch (err) {
     res.status(500).json(err);
   }
@@ -102,6 +152,5 @@ post.get("/profile/:userName", async (req, res) => {
 post.get("/", (req, res) => {
   res.send("I am in post page now");
 });
+
 module.exports = post;
-
-

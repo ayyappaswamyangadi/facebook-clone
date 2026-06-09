@@ -7,11 +7,12 @@ import { Spinner } from "../loaders/Loaders";
 import "./friends-dropdown.scss";
 
 const FO = process.env.REACT_APP_PUBLIC_FOLDER;
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E";
 
 const avatarSrc = (pic) =>
   pic
     ? pic.startsWith("http") ? pic : FO + "profiles/" + pic
-    : FO + "profiles/no-avatar.png";
+    : PLACEHOLDER_AVATAR;
 
 const FriendsDropdown = ({ onClose }) => {
   const { user, dispatch } = useContext(AuthContext);
@@ -120,7 +121,7 @@ const FriendsDropdown = ({ onClose }) => {
                     className="friends-dd-avatar"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = FO + "profiles/no-avatar.png";
+                      e.target.src = PLACEHOLDER_AVATAR;
                     }}
                   />
                   <div className="friends-dd-info">
@@ -158,7 +159,7 @@ const FriendsDropdown = ({ onClose }) => {
                     className="friends-dd-avatar"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = FO + "profiles/no-avatar.png";
+                      e.target.src = PLACEHOLDER_AVATAR;
                     }}
                   />
                   <span className="friends-dd-name">{f.userName}</span>

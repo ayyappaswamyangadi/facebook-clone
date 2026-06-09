@@ -1,5 +1,5 @@
 import "./post.scss"
-import { MoreVert, Edit, Delete, Close, Room } from "@mui/icons-material";
+import { MoreVert, Edit, Delete, Close, Room, VisibilityOff } from "@mui/icons-material";
 import { useContext, useState, useEffect, useRef } from "react"
 import axios from 'axios'
 import moment from 'moment'
@@ -9,10 +9,10 @@ import Comments from "../comments/Comments";
 import { PostAuthorSkeleton } from "../loaders/Loaders";
 
 const PF = process.env.REACT_APP_PUBLIC_FOLDER;
-const NO_AVATAR = PF + "profiles/no-avatar.png";
-const NO_IMAGE = "/assets/no-image.svg";
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E";
+const PLACEHOLDER_POST = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f0f2f5'/%3E%3Ctext x='300' y='210' text-anchor='middle' font-family='Arial' font-size='18' fill='%23bcc0c4'%3EImage not available%3C/text%3E%3C/svg%3E";
 
-const Post = ({ post, onDelete }) => {
+const Post = ({ post, onDelete, onHide }) => {
     const { user: currentUser } = useContext(AuthContext)
     const [user, setUser] = useState({});
     const [loadingUser, setLoadingUser] = useState(true);
@@ -82,6 +82,16 @@ const Post = ({ post, onDelete }) => {
         }
     }
 
+    const handleHide = async () => {
+        setShowMenu(false)
+        try {
+            await axios.put("/post/" + post._id + "/hide", { userId: currentUser._id })
+            onHide && onHide(post._id)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
     const handleEditSubmit = async (e) => {
         e.preventDefault()
         try {
@@ -99,7 +109,7 @@ const Post = ({ post, onDelete }) => {
         ? (user.profilePicture.startsWith('http')
             ? user.profilePicture
             : PF + "profiles/" + user.profilePicture)
-        : NO_AVATAR
+        : PLACEHOLDER_AVATAR
 
     return (
         <div className="post">
@@ -115,7 +125,7 @@ const Post = ({ post, onDelete }) => {
                                         src={profileSrc}
                                         alt=""
                                         className="post-profile-img"
-                                        onError={(e) => { e.target.onerror = null; e.target.src = NO_AVATAR; }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
                                     />
                                 </Link>
                                 <Link to={`/profile/${user.userName}`} className="post-links">
@@ -126,28 +136,29 @@ const Post = ({ post, onDelete }) => {
                         )}
                     </div>
 
-                    {isOwnPost && (
-                        <div className="post-top-right" ref={menuRef}>
-                            <div className="post-menu-trigger" onClick={() => setShowMenu(p => !p)}>
-                                <MoreVert />
-                            </div>
-                            {showMenu && (
-                                <div className="post-menu">
-                                    <button className="post-menu-item" onClick={() => { setShowMenu(false); setEditDesc(postDesc); setShowEditModal(true); }}>
-                                        <Edit fontSize="small" /> Edit post
-                                    </button>
-                                    <button className="post-menu-item post-menu-item--danger" onClick={handleDelete}>
-                                        <Delete fontSize="small" /> Delete post
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    {!isOwnPost && (
-                        <div className="post-top-right">
+                    <div className="post-top-right" ref={menuRef}>
+                        <div className="post-menu-trigger" onClick={() => setShowMenu(p => !p)}>
                             <MoreVert />
                         </div>
-                    )}
+                        {showMenu && (
+                            <div className="post-menu">
+                                {isOwnPost ? (
+                                    <>
+                                        <button className="post-menu-item" onClick={() => { setShowMenu(false); setEditDesc(postDesc); setShowEditModal(true); }}>
+                                            <Edit fontSize="small" /> Edit post
+                                        </button>
+                                        <button className="post-menu-item post-menu-item--danger" onClick={handleDelete}>
+                                            <Delete fontSize="small" /> Delete post
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button className="post-menu-item" onClick={handleHide}>
+                                        <VisibilityOff fontSize="small" /> Hide post
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="post-center">
@@ -184,25 +195,23 @@ const Post = ({ post, onDelete }) => {
                             src={post.img.startsWith('http') ? post.img : PF + post.img}
                             alt=""
                             className="post-img"
-                            onError={(e) => { e.target.onerror = null; e.target.src = NO_IMAGE; }}
+                            onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_POST; }}
                         />
                     )}
                 </div>
 
                 <div className="post-bottom">
                     <div className="post-bottom-left">
-                        <img
-                            src={`${PF}like.png`}
-                            alt=""
-                            className={`like-img${isLiked ? " liked-active" : ""}`}
+                        <span
+                            className={`like-icon${isLiked ? " liked-active" : ""}`}
                             onClick={likeHandler}
-                        />
-                        <img
-                            src={`${PF}heart.png`}
-                            alt=""
-                            className="heart-img"
+                            title="Like"
+                        >👍</span>
+                        <span
+                            className="heart-icon"
                             onClick={likeHandler}
-                        />
+                            title="Love"
+                        >❤️</span>
                         <span className="post-like-counter">{like} {like === 1 ? "person" : "people"} like this</span>
                     </div>
                     <div className="post-bottom-right">

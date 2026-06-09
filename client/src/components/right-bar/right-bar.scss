@@ -10,33 +10,17 @@
   }
 }
 
-.birthday-container {
-  display: flex;
-  align-items: center;
-}
-
 .right-bar-wrapper {
-  padding: 20px 20px 0 0;
-}
-
-.birthday-img {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
-}
-
-.birthday-text {
-  font-weight: 300;
-}
-
-.right-bar-ad {
-  width: 100%;
-  border-radius: 10px;
-  margin: 30px 0;
+  padding: 20px 20px 20px 10px;
 }
 
 .right-bar-title {
-  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #050505;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
 }
 
 .right-bar-friend-list {
@@ -45,79 +29,161 @@
   list-style: none;
 }
 
-.right-bar-title {
-  font-style: 18px;
-  font-weight: 500;
-  margin-bottom: 10px;
+.right-bar-no-friends {
+  font-size: 14px;
+  color: #65676b;
+  padding: 8px 0;
 }
 
+/* ── User Info ──────────────────────────────────────── */
+
 .right-bar-info {
-  margin-bottom: 30px;
+  background: #f7f8fa;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 24px;
 }
 
 .right-bar-info-item {
-  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e4e6e9;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.right-bar-info-icon {
+  color: #1877f2;
+  font-size: 20px !important;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.right-bar-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .right-bar-info-key {
-  font-weight: 500;
-  margin-right: 15px;
-  color: cadetblue;
+  font-size: 11px;
+  font-weight: 700;
+  color: #65676b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .right-bar-info-value {
-  font-weight: 300;
+  font-size: 14px;
+  font-weight: 500;
+  color: #050505;
 }
+
+.right-bar-info-empty {
+  font-size: 14px;
+  color: #65676b;
+  margin: 0;
+  padding: 4px 0;
+}
+
+/* ── Following section (horizontal scroll) ──────────── */
 
 .right-bar-followings {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  overflow-x: auto;
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  flex-wrap: nowrap;
+  scroll-snap-type: x mandatory;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #bcc0c4;
+    border-radius: 4px;
+  }
+}
+
+.right-bar-following-link {
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 .right-bar-following {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  align-items: center;
+  gap: 5px;
   cursor: pointer;
+  width: 70px;
+
+  &:hover .right-bar-following-name {
+    color: #1877f2;
+  }
 }
 
 .right-bar-following-img {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 5px;
-}
+  border-radius: 10px;
+  border: 2px solid #e4e6e9;
+  transition: border-color 0.12s;
 
-.friendListLink {
-  text-decoration: none;
-  color: black;
-
-  &:link {
-    text-decoration: none;
-    color: black;
-  }
-
-  &:visited {
-    text-decoration: none;
-    color: black;
+  .right-bar-following-link:hover & {
+    border-color: #1877f2;
   }
 }
+
+.right-bar-following-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #050505;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.12s;
+}
+
+/* ── Follow button ──────────────────────────────────── */
 
 .right-bar-follow-button {
-  margin-top: 30px;
-  margin-bottom: 10px;
+  margin-top: 10px;
+  margin-bottom: 16px;
   border: none;
-  background-color: #1872f2;
+  background-color: #1877f2;
   color: white;
-  border-radius: 5px;
-  padding: 5px 10px;
+  border-radius: 8px;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
-  font-style: 16px;
-  font-weight: 500;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   outline: none;
+  transition: background 0.12s;
+
+  &:hover {
+    background: #166fe5;
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────── */

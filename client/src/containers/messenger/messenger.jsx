@@ -22,6 +22,8 @@ const Messenger = () => {
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [chatPartner, setChatPartner] = useState(null);
+    const [chatSearch, setChatSearch] = useState("");
+    const [conversationUsers, setConversationUsers] = useState({});
     const socket = useRef();
     const scrollRef = useRef();
     const inputRef = useRef();
@@ -86,7 +88,22 @@ const Messenger = () => {
             setLoadingConversations(true);
             try {
                 const response = await axios.get("/conversations/" + user._id);
-                setConversation(response.data);
+                const convs = response.data;
+                setConversation(convs);
+                // Pre-fetch conversation partner names for search
+                const userMap = {};
+                await Promise.all(
+                    convs.map(async (conv) => {
+                        const partnerId = conv.members.find(m => m !== user._id);
+                        if (partnerId) {
+                            try {
+                                const res = await axios.get("/users?userId=" + partnerId);
+                                userMap[conv._id] = res.data?.userName || "";
+                            } catch (e) {}
+                        }
+                    })
+                );
+                setConversationUsers(userMap);
             } catch (error) {
                 console.log(error);
             } finally {
@@ -222,8 +239,10 @@ const Messenger = () => {
                     <div className="chat-menu-wrapper">
                         <input
                             type="text"
-                            placeholder="Search for friends"
+                            placeholder="Search conversations…"
                             className="chat-menu-input"
+                            value={chatSearch}
+                            onChange={(e) => setChatSearch(e.target.value)}
                         />
                         {loadingConversations ? (
                             <>
@@ -233,17 +252,23 @@ const Messenger = () => {
                                 <ConversationSkeleton />
                             </>
                         ) : (
-                            conversations.map((conversation) => (
-                                <div
-                                    key={conversation._id}
-                                    onClick={() => setCurrentChat(conversation)}
-                                >
-                                    <Conversations
-                                        conversation={conversation}
-                                        currentUser={user}
-                                    />
-                                </div>
-                            ))
+                            conversations
+                                .filter((conv) => {
+                                    if (!chatSearch.trim()) return true;
+                                    const name = conversationUsers[conv._id] || "";
+                                    return name.toLowerCase().includes(chatSearch.toLowerCase());
+                                })
+                                .map((conversation) => (
+                                    <div
+                                        key={conversation._id}
+                                        onClick={() => setCurrentChat(conversation)}
+                                    >
+                                        <Conversations
+                                            conversation={conversation}
+                                            currentUser={user}
+                                        />
+                                    </div>
+                                ))
                         )}
                     </div>
                 </div>
