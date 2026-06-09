@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom'
 const MAX_IMAGE_MB = 5;
 const MAX_IMAGE_BYTES = MAX_IMAGE_MB * 1024 * 1024;
 
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E";
+
 const Share = () => {
     const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
     const { user } = useContext(AuthContext)
@@ -148,7 +150,7 @@ const Share = () => {
             <div className={`share-wrapper${isSharing ? " share-wrapper--disabled" : ""}`}>
                 <div className="share-top">
                     <Link to={"/profile/" + user.userName}>
-                        <img src={profileSrc} alt="profile-pic" className="share-profile-pic" />
+                        <img src={profileSrc} alt="profile-pic" className="share-profile-pic" onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }} />
                     </Link>
                     <textarea
                         ref={textareaRef}
@@ -217,9 +219,10 @@ const Share = () => {
                                         <img
                                             src={f.profilePicture
                                                 ? (f.profilePicture.startsWith('http') ? f.profilePicture : public_folder_path + "profiles/" + f.profilePicture)
-                                                : public_folder_path + "profiles/no-avatar.png"}
+                                                : PLACEHOLDER_AVATAR}
                                             alt=""
                                             className="share-tag-avatar"
+                                            onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
                                         />
                                         <span>{f.userName}</span>
                                     </li>

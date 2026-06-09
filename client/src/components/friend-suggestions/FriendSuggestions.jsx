@@ -5,6 +5,8 @@ import { PersonAdd, Close } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
 import "./friend-suggestions.scss";
 
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E";
+
 const FriendSuggestions = () => {
   const { user: currentUser, dispatch } = useContext(AuthContext);
   const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
@@ -68,11 +70,12 @@ const FriendSuggestions = () => {
               <img
                 src={
                   s.profilePicture
-                    ? public_folder + "profiles/" + s.profilePicture
-                    : public_folder + "profiles/no-avatar.png"
+                    ? (s.profilePicture.startsWith('http') ? s.profilePicture : public_folder + "profiles/" + s.profilePicture)
+                    : PLACEHOLDER_AVATAR
                 }
                 alt={s.userName}
                 className="suggestion-avatar"
+                onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
               />
             </Link>
             <Link

@@ -5,6 +5,8 @@ import { AuthContext } from "../context/AuthContext";
 import { StoriesBarSkeleton } from "../loaders/Loaders";
 import "./stories.scss";
 
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E";
+
 const Stories = () => {
   const { user } = useContext(AuthContext);
   const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
@@ -93,8 +95,7 @@ const Stories = () => {
 
   const profileSrc = (uid) => {
     const u = userMap[uid];
-    if (!u) return public_folder + "profiles/no-avatar.png";
-    if (!u.profilePicture) return public_folder + "profiles/no-avatar.png";
+    if (!u || !u.profilePicture) return PLACEHOLDER_AVATAR;
     return u.profilePicture.startsWith("http")
       ? u.profilePicture
       : public_folder + "profiles/" + u.profilePicture;
@@ -121,10 +122,11 @@ const Stories = () => {
                 ? user.profilePicture.startsWith("http")
                   ? user.profilePicture
                   : public_folder + "profiles/" + user.profilePicture
-                : public_folder + "profiles/no-avatar.png"
+                : PLACEHOLDER_AVATAR
             }
             alt="add"
             className="story-card-bg"
+            onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
           />
           <div className="story-add-btn">
             <Add />
@@ -150,7 +152,7 @@ const Stories = () => {
                 <span>{storyGroups[uid][0].desc}</span>
               </div>
             )}
-            <img src={profileSrc(uid)} alt="user" className="story-card-avatar" />
+            <img src={profileSrc(uid)} alt="user" className="story-card-avatar" onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }} />
             <span className="story-card-name">
               {userMap[uid]?.userName || "..."}
             </span>
@@ -187,6 +189,7 @@ const Stories = () => {
                 src={profileSrc(viewStory.userId)}
                 alt="user"
                 className="story-viewer-avatar"
+                onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
               />
               <span className="story-viewer-name">
                 {userMap[viewStory.userId]?.userName}
