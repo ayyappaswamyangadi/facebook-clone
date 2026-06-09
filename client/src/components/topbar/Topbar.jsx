@@ -196,12 +196,17 @@ const Topbar = () => {
               <div className="topbar-search-section">
                 <div className="topbar-search-section-title">Posts</div>
                 {searchResults.posts.map((p) => (
-                  <div key={p._id} className="topbar-search-item topbar-search-post">
+                  <Link
+                    key={p._id}
+                    to={p.userName ? `/profile/${p.userName}#post-${p._id}` : "/"}
+                    className="topbar-search-item topbar-search-post"
+                    onClick={clearSearch}
+                  >
                     <svg className="topbar-search-post-icon" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
                     </svg>
                     <span className="topbar-search-post-desc">{p.desc || "(no text)"}</span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
