@@ -6,13 +6,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const createTransporter = () =>
+  nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
 const sendOtpEmail = async (to, otp, purpose) => {
   const subject =
@@ -22,6 +25,7 @@ const sendOtpEmail = async (to, otp, purpose) => {
       ? "complete your account registration"
       : "reset your password";
 
+  const transporter = createTransporter();
   await transporter.sendMail({
     from: `"Facebook Clone" <${process.env.EMAIL_USER}>`,
     to,
@@ -38,6 +42,7 @@ const sendOtpEmail = async (to, otp, purpose) => {
 };
 
 const sendAdminNotificationEmail = async (adminEmail, userData) => {
+  const transporter = createTransporter();
   await transporter.sendMail({
     from: `"Facebook Clone" <${process.env.EMAIL_USER}>`,
     to: adminEmail,
@@ -84,7 +89,7 @@ auth.post("/send-otp", async (req, res) => {
 
     res.status(200).json("OTP sent to your email address.");
   } catch (err) {
-    console.log(err);
+    console.error("[send-otp] error:", err.code, err.responseCode, err.message);
     res.status(500).json("Failed to send OTP. Please try again.");
   }
 });

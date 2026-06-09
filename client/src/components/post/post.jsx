@@ -126,6 +126,7 @@ const Post = ({ post, onDelete, onHide }) => {
                                         src={profileSrc}
                                         alt=""
                                         className="post-profile-img"
+                                        loading="lazy"
                                         onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
                                     />
                                 </Link>
@@ -196,6 +197,7 @@ const Post = ({ post, onDelete, onHide }) => {
                             src={post.img.startsWith('http') ? post.img : PF + post.img}
                             alt=""
                             className="post-img"
+                            loading="lazy"
                             onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_POST; }}
                         />
                     )}

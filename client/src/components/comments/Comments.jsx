@@ -143,6 +143,7 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
           }
           alt=""
           className="comment-avatar"
+          loading="lazy"
           onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E"; }}
         />
         <div className="comment-input-wrapper">
@@ -179,6 +180,7 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
                   src={avatarSrc(comment.userId)}
                   alt=""
                   className="comment-avatar"
+                  loading="lazy"
                   onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E"; }}
                 />
               </Link>

@@ -126,6 +126,7 @@ const Stories = () => {
             }
             alt="add"
             className="story-card-bg"
+            loading="lazy"
             onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
           />
           <div className="story-add-btn">
@@ -146,13 +147,14 @@ const Stories = () => {
                 src={storySrc(storyGroups[uid][0])}
                 alt="story"
                 className="story-card-bg"
+                loading="lazy"
               />
             ) : (
               <div className="story-card-bg story-text-bg">
                 <span>{storyGroups[uid][0].desc}</span>
               </div>
             )}
-            <img src={profileSrc(uid)} alt="user" className="story-card-avatar" onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }} />
+            <img src={profileSrc(uid)} alt="user" className="story-card-avatar" loading="lazy" onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }} />
             <span className="story-card-name">
               {userMap[uid]?.userName || "..."}
             </span>
@@ -189,6 +191,7 @@ const Stories = () => {
                 src={profileSrc(viewStory.userId)}
                 alt="user"
                 className="story-viewer-avatar"
+                loading="eager"
                 onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_AVATAR; }}
               />
               <span className="story-viewer-name">
