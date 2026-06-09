@@ -5,7 +5,23 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { PostSkeleton } from "../loaders/Loaders";
+import useInView from "../../hooks/useInView";
 import "./news-feed.scss";
+
+// Mounts Post only when it scrolls within 300px of the viewport.
+// Once mounted it stays mounted so API calls don't repeat on scroll-back.
+const LazyPost = ({ post, onDelete, onHide }) => {
+  const [ref, inView] = useInView({ rootMargin: "300px 0px" });
+  return (
+    <div ref={ref}>
+      {inView ? (
+        <Post post={post} onDelete={onDelete} onHide={onHide} />
+      ) : (
+        <PostSkeleton />
+      )}
+    </div>
+  );
+};
 
 const NewsFeed = ({ userName }) => {
   const [posts, setPosts] = useState([]);
@@ -65,7 +81,7 @@ const NewsFeed = ({ userName }) => {
           </>
         ) : posts.length > 0 ? (
           posts.map((post) => (
-            <Post
+            <LazyPost
               key={post._id}
               post={post}
               onDelete={handleDelete}
