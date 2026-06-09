@@ -22,7 +22,19 @@ post.get("/search", async (req, res) => {
     const posts = await Post.find({
       desc: { $regex: q.trim(), $options: "i" },
     }).sort({ createdAt: -1 }).limit(20);
-    res.status(200).json(posts);
+
+    const uniqueUserIds = [...new Set(posts.map((p) => String(p.userId)))];
+    const users = await User.find({ _id: { $in: uniqueUserIds } }).select("userName profilePicture");
+    const userMap = {};
+    users.forEach((u) => { userMap[String(u._id)] = { userName: u.userName, profilePicture: u.profilePicture }; });
+
+    const postsWithUser = posts.map((p) => ({
+      ...p.toObject(),
+      userName: userMap[String(p.userId)]?.userName,
+      userProfilePicture: userMap[String(p.userId)]?.profilePicture,
+    }));
+
+    res.status(200).json(postsWithUser);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -39,7 +51,14 @@ post.get("/timeline/:userId", async (req, res) => {
         return Post.find({ userId: friendId, hiddenBy: { $ne: userId } });
       })
     );
-    res.status(200).json(userPosts.concat(...friendPosts));
+    const allPosts = userPosts.concat(...friendPosts);
+
+    const uniqueUserIds = [...new Set(allPosts.map((p) => String(p.userId)))];
+    const users = await User.find({ _id: { $in: uniqueUserIds } }).select("userName profilePicture");
+    const userMap = {};
+    users.forEach((u) => { userMap[String(u._id)] = { _id: u._id, userName: u.userName, profilePicture: u.profilePicture }; });
+
+    res.status(200).json(allPosts.map((p) => ({ ...p.toObject(), user: userMap[String(p.userId)] || null })));
   } catch (err) {
     res.status(500).json(err);
   }
@@ -50,7 +69,8 @@ post.get("/profile/:userName", async (req, res) => {
   try {
     const currentUser = await User.findOne({ userName: req.params.userName });
     const userPosts = await Post.find({ userId: currentUser._id });
-    res.status(200).json(userPosts);
+    const userData = { _id: currentUser._id, userName: currentUser.userName, profilePicture: currentUser.profilePicture };
+    res.status(200).json(userPosts.map((p) => ({ ...p.toObject(), user: userData })));
   } catch (err) {
     res.status(500).json(err);
   }

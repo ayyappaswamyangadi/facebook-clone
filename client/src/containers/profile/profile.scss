@@ -8,14 +8,15 @@
 }
 
 .profile-cover {
-  height: 300px;
   position: relative;
+  aspect-ratio: 851 / 315;
+  min-height: 150px;
 }
 
 .profile-cover-img {
   width: 100%;
-  height: 250px;
-  object-fit: cover;
+  height: 100%;
+  object-fit: fill;
   display: block;
 }
 
@@ -35,7 +36,7 @@
   font-weight: 600;
   color: #050505;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   transition: background 0.12s;
 
   &:hover {
@@ -51,7 +52,7 @@
   left: 0;
   right: 0;
   margin: auto;
-  top: 150px;
+  bottom: 0;
   border-radius: 50%;
   border: 3px solid white;
   overflow: visible; /* let the camera button overflow */
@@ -80,7 +81,7 @@
   align-items: center;
   justify-content: center;
   color: #050505;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: background 0.12s;
   z-index: 1;
 
@@ -215,45 +216,23 @@
     flex-direction: column;
   }
 
-  .profile-cover {
-    height: 220px;
-  }
-
-  .profile-cover-img {
-    height: 180px;
-  }
-
   .profile-user-img-wrapper {
     width: 100px;
     height: 100px;
-    top: 120px;
   }
 
   .profile-cover-edit-btn {
-    bottom: 48px;
+    bottom: 36px;
     right: 8px;
     padding: 5px 8px;
     font-size: 12px;
   }
-
-  .profile-info {
-    margin-top: 60px;
-  }
 }
 
 @media (max-width: 600px) {
-  .profile-cover {
-    height: 180px;
-  }
-
-  .profile-cover-img {
-    height: 140px;
-  }
-
   .profile-user-img-wrapper {
     width: 80px;
     height: 80px;
-    top: 95px;
   }
 
   .profile-cover-edit-btn span {
@@ -261,12 +240,8 @@
   }
 
   .profile-cover-edit-btn {
-    bottom: 38px;
+    bottom: 28px;
     right: 6px;
     padding: 5px;
-  }
-
-  .profile-info {
-    margin-top: 50px;
   }
 }

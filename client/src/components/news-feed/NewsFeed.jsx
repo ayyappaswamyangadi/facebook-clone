@@ -31,6 +31,13 @@ const NewsFeed = ({ userName }) => {
     fetchPosts();
   }, [userName, user._id]);
 
+  useEffect(() => {
+    if (!loading && posts.length > 0 && window.location.hash.startsWith("#post-")) {
+      const el = document.getElementById(window.location.hash.slice(1));
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [loading, posts]);
+
   const handleDelete = (deletedId) => {
     setPosts((prev) => prev.filter((p) => p._id !== deletedId));
   };

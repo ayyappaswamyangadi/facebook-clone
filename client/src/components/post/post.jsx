@@ -14,8 +14,8 @@ const PLACEHOLDER_POST = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200
 
 const Post = ({ post, onDelete, onHide }) => {
     const { user: currentUser } = useContext(AuthContext)
-    const [user, setUser] = useState({});
-    const [loadingUser, setLoadingUser] = useState(true);
+    const [user, setUser] = useState(post.user || {});
+    const [loadingUser, setLoadingUser] = useState(!post.user);
     const [like, setLike] = useState(post.likes.length)
     const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id))
     const [showComments, setShowComments] = useState(false)
@@ -29,6 +29,7 @@ const Post = ({ post, onDelete, onHide }) => {
     const isOwnPost = post.userId === currentUser._id
 
     useEffect(() => {
+        if (post.user) return;
         const fetchUser = async () => {
             setLoadingUser(true);
             try {
@@ -41,7 +42,7 @@ const Post = ({ post, onDelete, onHide }) => {
             }
         }
         fetchUser()
-    }, [post.userId])
+    }, [post.userId, post.user])
 
     useEffect(() => {
         const fetchCommentCount = async () => {
@@ -112,7 +113,7 @@ const Post = ({ post, onDelete, onHide }) => {
         : PLACEHOLDER_AVATAR
 
     return (
-        <div className="post">
+        <div className="post" id={"post-" + post._id}>
             <div className="post-wrapper">
                 <div className="post-top">
                     <div className="post-top-left">
