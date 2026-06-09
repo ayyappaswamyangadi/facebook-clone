@@ -1,9 +1,9 @@
 import OnlineFriend from "../online/OnlineFriend"
 import axios from "axios"
 import { useContext, useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { AuthContext } from "../context/AuthContext"
-import { Add, Remove, LocationOn, Home, Favorite, People } from "@mui/icons-material"
+import { Add, Remove, LocationOn, Home, Favorite, People, Chat } from "@mui/icons-material"
 import { RightBarSkeleton } from "../loaders/Loaders"
 import "./right-bar.scss"
 
@@ -18,11 +18,14 @@ const RELATIONSHIP_MAP = {
 
 const RightBar = ({ user }) => {
     const { user: currentUser, dispatch } = useContext(AuthContext)
+    const navigate = useNavigate()
 
     const [friends, setFriends] = useState([]);
     const [loadingFriends, setLoadingFriends] = useState(false);
     const [onlineFriends, setOnlineFriends] = useState([]);
     const [loadingOnline, setLoadingOnline] = useState(false);
+    const [followed, setFollowed] = useState(currentUser.following.includes(user?._id))
+    const [messageError, setMessageError] = useState("")
 
     useEffect(() => {
         if (!user?._id) return;
@@ -56,7 +59,20 @@ const RightBar = ({ user }) => {
         getOnlineFriends();
     }, [currentUser._id, user]);
 
-    const [followed, setFollowed] = useState(currentUser.following.includes(user?.id))
+    // Sync followed state when navigating to a different profile
+    useEffect(() => {
+        if (user?._id) {
+            setFollowed(currentUser.following.includes(user._id))
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?._id])
+
+    // True if the profile user follows the current user (check profile user's following list)
+    const theyFollowMe = user?.following?.some(id => String(id) === String(currentUser._id))
+
+    // True only when both users follow each other
+    const isMutual = followed && theyFollowMe
+
 
     const handleClick = async () => {
         try {
@@ -67,10 +83,32 @@ const RightBar = ({ user }) => {
                 await axios.put("/users/" + user._id + "/follow", { userId: currentUser._id })
                 dispatch({ type: "FOLLOW", payload: user._id })
             }
+            setFollowed(prev => !prev)
         } catch (err) {
             console.log(err);
         }
-        setFollowed(!followed)
+    }
+
+    const handleMessage = async () => {
+        if (!isMutual) {
+            setMessageError("Both users must follow each other to message.")
+            setTimeout(() => setMessageError(""), 3500)
+            return
+        }
+        try {
+            const res = await axios.get(`/conversations/find/${currentUser._id}/${user._id}`)
+            let conversation = res.data
+            if (!conversation) {
+                const newConv = await axios.post("/conversations", {
+                    senderId: currentUser._id,
+                    receiverId: user._id,
+                })
+                conversation = newConv.data
+            }
+            navigate("/messenger", { state: { conversationId: conversation._id } })
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     const HomeRightBar = () => {
@@ -100,9 +138,19 @@ const RightBar = ({ user }) => {
         return (
             <>
                 {user.userName !== currentUser.userName && (
-                    <button className="right-bar-follow-button" onClick={handleClick}>
-                        {followed ? "Unfollow" : "Follow"} {followed ? <Remove /> : <Add />}
-                    </button>
+                    <div className="right-bar-action-buttons">
+                        <button className="right-bar-follow-button" onClick={handleClick}>
+                            {followed ? "Unfollow" : theyFollowMe ? "Follow Back" : "Follow"} {followed ? <Remove /> : <Add />}
+                        </button>
+                        {followed && (
+                            <button className="right-bar-message-button" onClick={handleMessage}>
+                                <Chat fontSize="small" /> Message
+                            </button>
+                        )}
+                    </div>
+                )}
+                {messageError && (
+                    <p className="right-bar-message-error">{messageError}</p>
                 )}
                 <h4 className="right-bar-title">User Information</h4>
                 <div className="right-bar-info">

@@ -68,6 +68,7 @@ router.get("/", async (req, res) => {
     const user = userId
       ? await User.findById(userId)
       : await User.findOne({ userName: userName });
+    if (!user) return res.status(404).json("User not found.");
     const { password, updatedAt, ...other } = user._doc;
     res.status(200).json(other);
   } catch (err) {
@@ -81,6 +82,8 @@ router.put("/:id/follow", async (req, res) => {
     try {
       const user = await User.findById(req.params.id);
       const currentUser = await User.findById(req.body.userId);
+      if (!user) return res.status(404).json("User not found.");
+      if (!currentUser) return res.status(404).json("Your account no longer exists. Please log in again.");
       if (!user.followers.includes(req.body.userId)) {
         await user.updateOne({
           $push: { followers: req.body.userId },
@@ -109,6 +112,8 @@ router.put("/:id/unfollow", async (req, res) => {
     const user = await User.findById(req.params.id);
     const currentUser = await User.findById(req.body.userId);
     try {
+      if (!user) return res.status(404).json("User not found.");
+      if (!currentUser) return res.status(404).json("Your account no longer exists. Please log in again.");
       if (user.followers.includes(req.body.userId)) {
         await user.updateOne({
           $pull: { followers: req.body.userId },
@@ -132,6 +137,7 @@ router.put("/:id/unfollow", async (req, res) => {
 router.get("/followers/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json("User not found.");
     const followers = await Promise.all(
       user.followers.map((id) => User.findById(id))
     );
@@ -148,6 +154,7 @@ router.get("/followers/:userId", async (req, res) => {
 router.get("/friends/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json("User not found.");
     const friends = await Promise.all(
       user.following.map((friendId) => {
         return User.findById(friendId);

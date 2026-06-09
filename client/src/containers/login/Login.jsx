@@ -11,14 +11,16 @@ const Login = () => {
   const password = useRef();
   const { loading, error, dispatch } = useContext(AuthContext);
 
-  // Forgot password state
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotNewPwd, setForgotNewPwd] = useState("");
   const [forgotConfirmPwd, setForgotConfirmPwd] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotOtpLoading, setForgotOtpLoading] = useState(false);
   const [forgotError, setForgotError] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState("");
+  const [forgotOtpSent, setForgotOtpSent] = useState(false);
 
   const handleClick = (event) => {
     event.preventDefault();
@@ -28,13 +30,39 @@ const Login = () => {
     );
   };
 
+  const handleSendForgotOtp = async () => {
+    setForgotError("");
+
+    if (!forgotEmail.trim()) {
+      setForgotError("Please enter your email address.");
+      return;
+    }
+
+    setForgotOtpLoading(true);
+    try {
+      await axios.post("/auth/send-otp", { email: forgotEmail.trim(), purpose: "reset" });
+      setForgotOtpSent(true);
+    } catch (err) {
+      setForgotError(
+        err.response?.data || "No account found with that email. Please check and try again."
+      );
+    } finally {
+      setForgotOtpLoading(false);
+    }
+  };
+
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
     setForgotError("");
     setForgotSuccess("");
 
-    if (!forgotEmail.trim()) {
-      setForgotError("Please enter your email address.");
+    if (!forgotOtpSent) {
+      await handleSendForgotOtp();
+      return;
+    }
+
+    if (!forgotOtp.trim()) {
+      setForgotError("Please enter the OTP sent to your email.");
       return;
     }
     if (forgotNewPwd.length < 6) {
@@ -51,16 +79,19 @@ const Login = () => {
       await axios.post("/auth/forgot-password", {
         email: forgotEmail.trim(),
         newPassword: forgotNewPwd,
+        otp: forgotOtp.trim(),
       });
       setForgotSuccess("Password reset successful! You can now log in with your new password.");
       setForgotNewPwd("");
       setForgotConfirmPwd("");
+      setForgotOtp("");
     } catch (err) {
       setForgotError(
-        err.response?.data || "No account found with that email. Please check and try again."
+        err.response?.data || "Something went wrong. Please try again."
       );
+    } finally {
+      setForgotLoading(false);
     }
-    setForgotLoading(false);
   };
 
   const closeForgot = () => {
@@ -68,6 +99,8 @@ const Login = () => {
     setForgotEmail("");
     setForgotNewPwd("");
     setForgotConfirmPwd("");
+    setForgotOtp("");
+    setForgotOtpSent(false);
     setForgotError("");
     setForgotSuccess("");
   };
@@ -122,7 +155,6 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
       {showForgot && (
         <div className="forgot-overlay" onClick={closeForgot}>
           <div className="forgot-modal" onClick={(e) => e.stopPropagation()}>
@@ -131,7 +163,9 @@ const Login = () => {
               <button className="forgot-modal-close" onClick={closeForgot}>✕</button>
             </div>
             <p className="forgot-modal-desc">
-              Enter your email address and choose a new password.
+              {forgotOtpSent
+                ? "Enter the OTP sent to your email, then choose a new password."
+                : "Enter your registered email to receive a verification code."}
             </p>
             <hr className="login-divider" />
             {forgotSuccess ? (
@@ -149,34 +183,57 @@ const Login = () => {
                   placeholder="Your email address"
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
+                  disabled={forgotOtpSent}
                   required
                 />
-                <input
-                  type="password"
-                  className="login-input"
-                  placeholder="New password (min. 6 characters)"
-                  value={forgotNewPwd}
-                  onChange={(e) => setForgotNewPwd(e.target.value)}
-                  required
-                />
-                <input
-                  type="password"
-                  className="login-input"
-                  placeholder="Confirm new password"
-                  value={forgotConfirmPwd}
-                  onChange={(e) => setForgotConfirmPwd(e.target.value)}
-                  required
-                />
+                {forgotOtpSent && (
+                  <>
+                    <input
+                      type="text"
+                      className="login-input"
+                      placeholder="Enter OTP"
+                      value={forgotOtp}
+                      onChange={(e) => setForgotOtp(e.target.value)}
+                      maxLength={6}
+                      required
+                    />
+                    <input
+                      type="password"
+                      className="login-input"
+                      placeholder="New password (min. 6 characters)"
+                      value={forgotNewPwd}
+                      onChange={(e) => setForgotNewPwd(e.target.value)}
+                      required
+                    />
+                    <input
+                      type="password"
+                      className="login-input"
+                      placeholder="Confirm new password"
+                      value={forgotConfirmPwd}
+                      onChange={(e) => setForgotConfirmPwd(e.target.value)}
+                      required
+                    />
+                    <span
+                      className="register-resend"
+                      style={{ display: "block", marginBottom: 8, cursor: "pointer", color: "#1877f2", fontSize: 13 }}
+                      onClick={() => { setForgotOtpSent(false); setForgotOtp(""); setForgotError(""); }}
+                    >
+                      Resend OTP
+                    </span>
+                  </>
+                )}
                 {forgotError && <p className="login-error">{forgotError}</p>}
                 <button
                   className="login-button"
                   type="submit"
-                  disabled={forgotLoading}
+                  disabled={forgotLoading || forgotOtpLoading}
                 >
-                  {forgotLoading ? (
+                  {forgotOtpLoading || forgotLoading ? (
                     <CircularProgress color="inherit" size="22px" />
-                  ) : (
+                  ) : forgotOtpSent ? (
                     "Reset Password"
+                  ) : (
+                    "Send OTP"
                   )}
                 </button>
                 <button

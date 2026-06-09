@@ -20,7 +20,9 @@ const NewsFeed = ({ userName }) => {
           ? await axios.get("/post/profile/" + userName)
           : await axios.get("/post/timeline/" + user._id);
         setPosts(
-          response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          response.data.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
         );
       } catch (err) {
         console.log(err);
@@ -32,7 +34,11 @@ const NewsFeed = ({ userName }) => {
   }, [userName, user._id]);
 
   useEffect(() => {
-    if (!loading && posts.length > 0 && window.location.hash.startsWith("#post-")) {
+    if (
+      !loading &&
+      posts.length > 0 &&
+      window.location.hash.startsWith("#post-")
+    ) {
       const el = document.getElementById(window.location.hash.slice(1));
       if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
@@ -59,10 +65,15 @@ const NewsFeed = ({ userName }) => {
           </>
         ) : posts.length > 0 ? (
           posts.map((post) => (
-            <Post key={post._id} post={post} onDelete={handleDelete} onHide={handleHide} />
+            <Post
+              key={post._id}
+              post={post}
+              onDelete={handleDelete}
+              onHide={handleHide}
+            />
           ))
         ) : (
-          <center>No posts yet</center>
+          <center className="no-posts-yet">No posts yet</center>
         )}
       </div>
     </div>

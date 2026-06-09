@@ -5,8 +5,12 @@ const { verify } = require("./auth");
 
 // create a post
 post.post("/", async (req, res) => {
-  const newPost = new Post(req.body);
   try {
+    const user = await User.findById(req.body.userId);
+    if (!user) {
+      return res.status(404).json("User not found. Please log in again.");
+    }
+    const newPost = new Post(req.body);
     const savedPost = await newPost.save();
     res.status(200).json(savedPost);
   } catch (err) {
@@ -44,6 +48,7 @@ post.get("/search", async (req, res) => {
 post.get("/timeline/:userId", async (req, res) => {
   try {
     const currentUser = await User.findById(req.params.userId);
+    if (!currentUser) return res.status(404).json("User not found.");
     const userId = String(currentUser._id);
     const userPosts = await Post.find({ userId: currentUser._id, hiddenBy: { $ne: userId } });
     const friendPosts = await Promise.all(
@@ -68,6 +73,7 @@ post.get("/timeline/:userId", async (req, res) => {
 post.get("/profile/:userName", async (req, res) => {
   try {
     const currentUser = await User.findOne({ userName: req.params.userName });
+    if (!currentUser) return res.status(404).json("User not found.");
     const userPosts = await Post.find({ userId: currentUser._id });
     const userData = { _id: currentUser._id, userName: currentUser.userName, profilePicture: currentUser.profilePicture };
     res.status(200).json(userPosts.map((p) => ({ ...p.toObject(), user: userData })));
@@ -100,6 +106,7 @@ post.get("/:id", verify, async (req, res) => {
 post.put("/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json("Post not found.");
     if (post.userId == req.body.userId) {
       await post.updateOne({ $set: req.body });
       res.status(200).json("post has been updated");
@@ -115,6 +122,7 @@ post.put("/:id", async (req, res) => {
 post.delete("/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json("Post not found.");
     if (post.userId == req.body.userId) {
       await post.deleteOne();
       res.status(200).json("post has been deleted");
@@ -130,6 +138,7 @@ post.delete("/:id", async (req, res) => {
 post.put("/:id/like", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json("Post not found.");
     if (!post.likes.includes(req.body.userId)) {
       await post.updateOne({ $push: { likes: req.body.userId } });
       res.status(200).json("the post has been liked");
@@ -146,6 +155,7 @@ post.put("/:id/like", async (req, res) => {
 post.put("/:id/hide", async (req, res) => {
   try {
     const p = await Post.findById(req.params.id);
+    if (!p) return res.status(404).json("Post not found.");
     if (!p.hiddenBy.includes(req.body.userId)) {
       await p.updateOne({ $push: { hiddenBy: req.body.userId } });
       res.status(200).json("Post hidden");

@@ -10,5 +10,8 @@
 .env.production.local
 !.env.production
 
+# Memory
+memory/
+
 # Dependencies
 node_modules/
