@@ -41,6 +41,11 @@ const Profile = () => {
     }, [userName])
 
     useEffect(() => {
+        setActiveTab("posts")
+        setHiddenPosts([])
+    }, [userName])
+
+    useEffect(() => {
         if (activeTab === "hidden" && currentUser) {
             const fetchHidden = async () => {
                 setLoadingHidden(true)
@@ -156,7 +161,7 @@ const Profile = () => {
                         )}
                     </div>
                     <div className="profile-right-bottom">
-                        {activeTab === "posts" ? (
+                        {activeTab === "posts" || !isOwnProfile ? (
                             <>
                                 <NewsFeed userName={userName} />
                                 <RightBar user={user} />

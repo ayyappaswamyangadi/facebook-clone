@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useContext } from "react";
+import { useLocation } from "react-router-dom";
 import ChatOnline from "../../components/chat-online/ChatOnline";
 import { AuthContext } from "../../components/context/AuthContext";
 import Conversations from "../../components/conversations/Conversations";
@@ -29,6 +30,7 @@ const Messenger = () => {
     const inputRef = useRef();
     const emojiPickerRef = useRef();
     const { user } = useContext(AuthContext);
+    const location = useLocation();
     const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
     useEffect(() => {
@@ -230,6 +232,25 @@ const Messenger = () => {
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+    // Open a specific conversation when navigated from a profile's Message button
+    useEffect(() => {
+        const targetConvId = location.state?.conversationId;
+        if (!targetConvId || loadingConversations) return;
+
+        const found = conversations.find(c => c._id === targetConvId);
+        if (found) {
+            setCurrentChat(found);
+            return;
+        }
+        // Conversation was just created — re-fetch the list then open it
+        axios.get("/conversations/" + user._id).then(res => {
+            setConversation(res.data);
+            const conv = res.data.find(c => c._id === targetConvId);
+            if (conv) setCurrentChat(conv);
+        }).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loadingConversations]);
 
     return (
         <>

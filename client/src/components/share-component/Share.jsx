@@ -122,8 +122,13 @@ const Share = () => {
             await axios.post('/post', newPost)
             window.location.reload()
         } catch (err) {
-            console.log(err)
-            setError("Failed to share post. Please try again.")
+            const status = err.response?.status;
+            const message = err.response?.data;
+            if (status === 404 && typeof message === 'string' && message.toLowerCase().includes("user not found")) {
+                setError("Your account no longer exists. Logging you out…")
+            } else {
+                setError("Failed to share post. Please try again.")
+            }
             setIsSharing(false)
         }
     }

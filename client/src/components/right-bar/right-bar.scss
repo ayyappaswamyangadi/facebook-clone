@@ -162,11 +162,17 @@
   transition: color 0.12s;
 }
 
-/* ── Follow button ──────────────────────────────────── */
+/* ── Action buttons (follow + message) ──────────────── */
 
-.right-bar-follow-button {
+.right-bar-action-buttons {
+  display: flex;
+  gap: 8px;
   margin-top: 10px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.right-bar-follow-button {
   border: none;
   background-color: #1877f2;
   color: white;
@@ -184,6 +190,33 @@
   &:hover {
     background: #166fe5;
   }
+}
+
+.right-bar-message-button {
+  border: none;
+  background-color: #e4e6eb;
+  color: #050505;
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.12s;
+
+  &:hover {
+    background: #d8dadf;
+  }
+}
+
+.right-bar-message-error {
+  color: #e53935;
+  font-size: 13px;
+  margin: -8px 0 12px;
+  font-weight: 500;
 }
 
 /* ── Responsive ──────────────────────────────────────── */

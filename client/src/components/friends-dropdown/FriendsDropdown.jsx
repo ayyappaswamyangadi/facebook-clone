@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
-import { Close, PersonAdd, Check } from "@mui/icons-material";
+import { Link, useNavigate } from "react-router-dom";
+import { Close, PersonAdd, Check, Chat } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
 import { Spinner } from "../loaders/Loaders";
 import "./friends-dropdown.scss";
@@ -16,6 +16,7 @@ const avatarSrc = (pic) =>
 
 const FriendsDropdown = ({ onClose }) => {
   const { user, dispatch } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [tab, setTab] = useState("requests");
   const [followers, setFollowers] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -52,6 +53,28 @@ const FriendsDropdown = ({ onClose }) => {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
+
+  // True if the friend also follows the current user back
+  const isMutual = (friendId) =>
+    user.followers?.some(id => String(id) === String(friendId));
+
+  const handleMessageFriend = async (friendId) => {
+    try {
+      const res = await axios.get(`/conversations/find/${user._id}/${friendId}`);
+      let conversation = res.data;
+      if (!conversation) {
+        const newConv = await axios.post("/conversations", {
+          senderId: user._id,
+          receiverId: friendId,
+        });
+        conversation = newConv.data;
+      }
+      navigate("/messenger", { state: { conversationId: conversation._id } });
+      onClose();
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleAccept = async (followerId) => {
     setAccepting((p) => ({ ...p, [followerId]: true }));
@@ -164,6 +187,15 @@ const FriendsDropdown = ({ onClose }) => {
                   />
                   <span className="friends-dd-name">{f.userName}</span>
                 </Link>
+                {isMutual(f._id) && (
+                  <button
+                    className="friends-dd-msg"
+                    title="Message"
+                    onClick={() => handleMessageFriend(String(f._id))}
+                  >
+                    <Chat fontSize="small" />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

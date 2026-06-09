@@ -31,7 +31,7 @@ const Sidebar = () => {
             }
         };
         getFriends();
-    }, [user._id]);
+    }, [user._id, user.following]);
 
     return (
         <div className="side-bar">
