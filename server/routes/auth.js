@@ -4,10 +4,47 @@ const User = require("../models/User");
 const Otp = require("../models/Otp");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { Resend } = require("resend");
+const { google } = require("googleapis");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.EMAIL_FROM || "Facebook Clone <onboarding@resend.dev>";
+const createGmailClient = () => {
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+  );
+  oauth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+  return google.gmail({ version: "v1", auth: oauth2Client });
+};
+
+const buildRawMessage = (from, to, subject, html) => {
+  const message = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    "Content-Type: text/html; charset=utf-8",
+    "",
+    html,
+  ].join("\r\n");
+  return Buffer.from(message)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+};
+
+const sendEmail = async (to, subject, html) => {
+  const gmail = createGmailClient();
+  const raw = buildRawMessage(process.env.EMAIL_FROM, to, subject, html);
+  try {
+    await gmail.users.messages.send({ userId: "me", requestBody: { raw } });
+  } catch (err) {
+    const apiError = err.response?.data ?? err.message;
+    console.error("[gmail] send failed — to:", to, "| subject:", subject);
+    console.error("[gmail] status:", err.response?.status, "| detail:", JSON.stringify(apiError));
+    throw err;
+  }
+};
 
 const sendOtpEmail = async (to, otp, purpose) => {
   const subject =
@@ -17,38 +54,28 @@ const sendOtpEmail = async (to, otp, purpose) => {
       ? "complete your account registration"
       : "reset your password";
 
-  await resend.emails.send({
-    from: FROM_EMAIL,
-    to,
-    subject,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;">
-        <h2 style="color:#1877f2;">Your verification code</h2>
-        <p>Use the code below to ${action}. It expires in <strong>10 minutes</strong>.</p>
-        <div style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#1877f2;padding:16px 0;">${otp}</div>
-        <p style="color:#888;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
-      </div>
-    `,
-  });
+  await sendEmail(to, subject, `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;">
+      <h2 style="color:#1877f2;">Your verification code</h2>
+      <p>Use the code below to ${action}. It expires in <strong>10 minutes</strong>.</p>
+      <div style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#1877f2;padding:16px 0;">${otp}</div>
+      <p style="color:#888;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
+    </div>
+  `);
 };
 
 const sendAdminNotificationEmail = async (adminEmail, userData) => {
-  await resend.emails.send({
-    from: FROM_EMAIL,
-    to: adminEmail,
-    subject: "New User Registration – Facebook Clone",
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;">
-        <h2 style="color:#1877f2;">New User Registered</h2>
-        <p>A new account was created on Facebook Clone.</p>
-        <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-          <tr><td style="padding:8px 12px;font-weight:bold;color:#65676b;background:#f7f8fa;">Username</td><td style="padding:8px 12px;">${userData.userName}</td></tr>
-          <tr><td style="padding:8px 12px;font-weight:bold;color:#65676b;">Email</td><td style="padding:8px 12px;">${userData.email}</td></tr>
-          <tr><td style="padding:8px 12px;font-weight:bold;color:#65676b;background:#f7f8fa;">Registered At</td><td style="padding:8px 12px;background:#f7f8fa;">${new Date().toLocaleString()}</td></tr>
-        </table>
-      </div>
-    `,
-  });
+  await sendEmail(adminEmail, "New User Registration – Facebook Clone", `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px;">
+      <h2 style="color:#1877f2;">New User Registered</h2>
+      <p>A new account was created on Facebook Clone.</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+        <tr><td style="padding:8px 12px;font-weight:bold;color:#65676b;background:#f7f8fa;">Username</td><td style="padding:8px 12px;">${userData.userName}</td></tr>
+        <tr><td style="padding:8px 12px;font-weight:bold;color:#65676b;">Email</td><td style="padding:8px 12px;">${userData.email}</td></tr>
+        <tr><td style="padding:8px 12px;font-weight:bold;color:#65676b;background:#f7f8fa;">Registered At</td><td style="padding:8px 12px;background:#f7f8fa;">${new Date().toLocaleString()}</td></tr>
+      </table>
+    </div>
+  `);
 };
 
 // Send OTP — used for both register and reset flows
@@ -79,7 +106,8 @@ auth.post("/send-otp", async (req, res) => {
 
     res.status(200).json("OTP sent to your email address.");
   } catch (err) {
-    console.error("[send-otp] error:", err.code, err.responseCode, err.message);
+    // err already logged in detail by sendEmail — this catches DB errors or anything else
+    console.error("[send-otp] unhandled error:", err.message);
     res.status(500).json("Failed to send OTP. Please try again.");
   }
 });
