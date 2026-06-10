@@ -4,11 +4,13 @@ import axios from "axios";
 import moment from "moment";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { SocketContext } from "../context/SocketContext";
 import { Spinner } from "../loaders/Loaders";
 import "./comments.scss";
 
 const Comments = ({ postId, postOwnerId, onLoaded }) => {
   const { user: currentUser } = useContext(AuthContext);
+  const { socket } = useContext(SocketContext);
   const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
 
   const [comments, setComments] = useState([]);
@@ -16,6 +18,7 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetchingComments, setFetchingComments] = useState(true);
+  const [animatingId, setAnimatingId] = useState(null);
 
   // Fetch comments for this post
   useEffect(() => {
@@ -87,6 +90,13 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
   };
 
   const handleLike = async (commentId) => {
+    const comment = comments.find((c) => c._id === commentId);
+    if (!comment) return;
+    const wasLiked = comment.likes.includes(currentUser._id);
+    const commentOwnerId = comment.userId;
+
+    setAnimatingId(commentId);
+
     try {
       await axios.put("/comments/" + commentId + "/like", {
         userId: currentUser._id,
@@ -94,15 +104,29 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
       setComments((prev) =>
         prev.map((c) => {
           if (c._id !== commentId) return c;
-          const liked = c.likes.includes(currentUser._id);
           return {
             ...c,
-            likes: liked
+            likes: wasLiked
               ? c.likes.filter((id) => id !== currentUser._id)
               : [...c.likes, currentUser._id],
           };
         })
       );
+
+      if (!wasLiked && commentOwnerId !== currentUser._id) {
+        axios.post("/notifications", {
+          userId: commentOwnerId,
+          senderId: currentUser._id,
+          type: "commentLike",
+          postId,
+        }).catch(() => {});
+        socket?.emit("sendNotification", {
+          senderId: currentUser._id,
+          receiverId: commentOwnerId,
+          type: "commentLike",
+          postId,
+        });
+      }
     } catch (err) {
       console.log(err);
     }
@@ -199,8 +223,9 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
                     {moment(comment.createdAt).fromNow()}
                   </span>
                   <button
-                    className={`comment-like-btn ${liked ? "liked" : ""}`}
+                    className={`comment-like-btn ${liked ? "liked" : ""} ${animatingId === comment._id ? "pop" : ""}`}
                     onClick={() => handleLike(comment._id)}
+                    onAnimationEnd={() => setAnimatingId(null)}
                   >
                     <ThumbUp fontSize="inherit" />
                     {comment.likes.length > 0 && (

@@ -3,6 +3,7 @@ import axios from "axios"
 import { useContext, useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { AuthContext } from "../context/AuthContext"
+import { SocketContext } from "../context/SocketContext"
 import { Add, Remove, LocationOn, Home, Favorite, People, Chat } from "@mui/icons-material"
 import { RightBarSkeleton } from "../loaders/Loaders"
 import "./right-bar.scss"
@@ -18,6 +19,7 @@ const RELATIONSHIP_MAP = {
 
 const RightBar = ({ user }) => {
     const { user: currentUser, dispatch } = useContext(AuthContext)
+    const { socket } = useContext(SocketContext)
     const navigate = useNavigate()
 
     const [friends, setFriends] = useState([]);
@@ -82,6 +84,16 @@ const RightBar = ({ user }) => {
             } else {
                 await axios.put("/users/" + user._id + "/follow", { userId: currentUser._id })
                 dispatch({ type: "FOLLOW", payload: user._id })
+                axios.post("/notifications", {
+                    userId: user._id,
+                    senderId: currentUser._id,
+                    type: "follow",
+                }).catch(() => {})
+                socket?.emit("sendNotification", {
+                    senderId: currentUser._id,
+                    receiverId: user._id,
+                    type: "follow",
+                })
             }
             setFollowed(prev => !prev)
         } catch (err) {

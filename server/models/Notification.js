@@ -6,7 +6,7 @@ const NotificationSchema = new mongoose.Schema(
     senderId: { type: String, required: true },    // who triggered it
     type: {
       type: String,
-      enum: ["like", "comment", "follow", "message"],
+      enum: ["like", "comment", "commentLike", "follow", "message", "profileUpdate"],
       required: true,
     },
     postId: { type: String, default: null },

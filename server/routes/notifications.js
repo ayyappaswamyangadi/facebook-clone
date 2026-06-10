@@ -3,7 +3,7 @@ const Notification = require("../models/Notification");
 
 // Create a notification (skip self-interactions)
 router.post("/", async (req, res) => {
-  if (req.body.userId === req.body.senderId) {
+  if (req.body.userId === req.body.senderId && req.body.type !== "profileUpdate") {
     return res.status(200).json({ skipped: true });
   }
   const newNotification = new Notification(req.body);
