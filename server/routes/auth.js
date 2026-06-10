@@ -4,19 +4,10 @@ const User = require("../models/User");
 const Otp = require("../models/Otp");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const createTransporter = () =>
-  nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = process.env.EMAIL_FROM || "Facebook Clone <onboarding@resend.dev>";
 
 const sendOtpEmail = async (to, otp, purpose) => {
   const subject =
@@ -26,9 +17,8 @@ const sendOtpEmail = async (to, otp, purpose) => {
       ? "complete your account registration"
       : "reset your password";
 
-  const transporter = createTransporter();
-  await transporter.sendMail({
-    from: `"Facebook Clone" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: FROM_EMAIL,
     to,
     subject,
     html: `
@@ -43,9 +33,8 @@ const sendOtpEmail = async (to, otp, purpose) => {
 };
 
 const sendAdminNotificationEmail = async (adminEmail, userData) => {
-  const transporter = createTransporter();
-  await transporter.sendMail({
-    from: `"Facebook Clone" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: FROM_EMAIL,
     to: adminEmail,
     subject: "New User Registration – Facebook Clone",
     html: `
