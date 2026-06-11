@@ -60,6 +60,17 @@ const NewsFeed = ({ userName }) => {
     }
   }, [loading, posts]);
 
+  useEffect(() => {
+    const onPostCreated = (e) => {
+      const newPost = e.detail;
+      if (newPost?._id) {
+        setPosts((prev) => [newPost, ...prev]);
+      }
+    };
+    window.addEventListener("fb-post-created", onPostCreated);
+    return () => window.removeEventListener("fb-post-created", onPostCreated);
+  }, []);
+
   const handleDelete = (deletedId) => {
     setPosts((prev) => prev.filter((p) => p._id !== deletedId));
   };

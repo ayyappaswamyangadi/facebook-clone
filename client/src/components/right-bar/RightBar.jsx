@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { AuthContext } from "../context/AuthContext"
 import { SocketContext } from "../context/SocketContext"
+import { useToast } from "../context/ToastContext"
 import { Add, Remove, LocationOn, Home, Favorite, People, Chat } from "@mui/icons-material"
 import { RightBarSkeleton } from "../loaders/Loaders"
 import "./right-bar.scss"
@@ -21,13 +22,13 @@ const RightBar = ({ user }) => {
     const { user: currentUser, dispatch } = useContext(AuthContext)
     const { socket } = useContext(SocketContext)
     const navigate = useNavigate()
+    const toast = useToast()
 
     const [friends, setFriends] = useState([]);
     const [loadingFriends, setLoadingFriends] = useState(false);
     const [onlineFriends, setOnlineFriends] = useState([]);
     const [loadingOnline, setLoadingOnline] = useState(false);
     const [followed, setFollowed] = useState(currentUser.following.includes(user?._id))
-    const [messageError, setMessageError] = useState("")
 
     useEffect(() => {
         if (!user?._id) return;
@@ -81,9 +82,11 @@ const RightBar = ({ user }) => {
             if (followed) {
                 await axios.put("/users/" + user._id + "/unfollow", { userId: currentUser._id })
                 dispatch({ type: "UNFOLLOW", payload: user._id })
+                toast.info(`Unfollowed ${user.userName}`)
             } else {
                 await axios.put("/users/" + user._id + "/follow", { userId: currentUser._id })
                 dispatch({ type: "FOLLOW", payload: user._id })
+                toast.success(`Now following ${user.userName}`)
                 axios.post("/notifications", {
                     userId: user._id,
                     senderId: currentUser._id,
@@ -97,14 +100,13 @@ const RightBar = ({ user }) => {
             }
             setFollowed(prev => !prev)
         } catch (err) {
-            console.log(err);
+            toast.error("Something went wrong. Please try again.")
         }
     }
 
     const handleMessage = async () => {
         if (!isMutual) {
-            setMessageError("Both users must follow each other to message.")
-            setTimeout(() => setMessageError(""), 3500)
+            toast.warning("Both users must follow each other to message.")
             return
         }
         try {
@@ -119,7 +121,7 @@ const RightBar = ({ user }) => {
             }
             navigate("/messenger", { state: { conversationId: conversation._id } })
         } catch (err) {
-            console.log(err)
+            toast.error("Failed to open conversation.")
         }
     }
 
@@ -160,9 +162,6 @@ const RightBar = ({ user }) => {
                             </button>
                         )}
                     </div>
-                )}
-                {messageError && (
-                    <p className="right-bar-message-error">{messageError}</p>
                 )}
                 <h4 className="right-bar-title">User Information</h4>
                 <div className="right-bar-info">

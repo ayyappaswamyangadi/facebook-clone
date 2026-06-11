@@ -2,6 +2,7 @@ import { useContext, useRef, useState } from "react";
 import { Close, Crop, PhotoCamera } from "@mui/icons-material";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import ImageCropModal from "../image-crop/ImageCropModal";
 import "./edit-profile.scss";
 
@@ -11,6 +12,7 @@ const MAX_IMAGE_BYTES = MAX_IMAGE_MB * 1024 * 1024;
 
 const EditProfileModal = ({ user, onClose, onUpdate }) => {
   const { user: currentUser, dispatch } = useContext(AuthContext);
+  const toast = useToast();
 
   const [form, setForm] = useState({
     userName: user.userName || "",
@@ -131,12 +133,13 @@ const EditProfileModal = ({ user, onClose, onUpdate }) => {
         type: "profileUpdate",
       }).catch(() => {});
 
+      toast.success("Profile updated successfully!");
       onClose();
     } catch (err) {
-      console.log(err);
       const msg = err.response?.data;
-      if (typeof msg === "string") setError(msg);
-      else setError("Failed to save changes. Username or email may already be taken.");
+      const errMsg = typeof msg === "string" ? msg : "Failed to save changes. Username may already be taken.";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setSaving(false);
     }

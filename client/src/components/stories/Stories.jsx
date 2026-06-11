@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Add, Close, PlayArrow } from "@mui/icons-material";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { StoriesBarSkeleton } from "../loaders/Loaders";
 import "./stories.scss";
 
@@ -9,6 +10,7 @@ const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2
 
 const Stories = () => {
   const { user } = useContext(AuthContext);
+  const toast = useToast();
   const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
   const [storyGroups, setStoryGroups] = useState({});
   const [userMap, setUserMap] = useState({});
@@ -73,17 +75,25 @@ const Stories = () => {
         const uploadRes = await axios.post("/upload", data);
         img = uploadRes.data;
       }
-      await axios.post("/stories", {
+      const res = await axios.post("/stories", {
         userId: user._id,
         img,
         desc: storyDesc,
       });
+      toast.success("Story shared!");
       setShowCreate(false);
       setStoryFile(null);
       setStoryDesc("");
-      window.location.reload();
+      // Add new story to groups without full reload
+      const newStory = res.data;
+      setStoryGroups((prev) => {
+        const uid = user._id;
+        const existing = prev[uid] || [];
+        return { ...prev, [uid]: [...existing, newStory] };
+      });
+      setUserMap((prev) => ({ ...prev, [user._id]: user }));
     } catch (err) {
-      console.log(err);
+      toast.error("Failed to share story.");
     } finally {
       setUploading(false);
     }
