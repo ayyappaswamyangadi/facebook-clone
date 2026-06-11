@@ -5,6 +5,7 @@ import axios from 'axios'
 import moment from 'moment'
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { SocketContext } from "../context/SocketContext";
 import Comments from "../comments/Comments";
 import { PostAuthorSkeleton } from "../loaders/Loaders";
 
@@ -14,10 +15,14 @@ const PLACEHOLDER_POST = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200
 
 const Post = ({ post, onDelete, onHide }) => {
     const { user: currentUser } = useContext(AuthContext)
+    const { socket } = useContext(SocketContext)
     const [user, setUser] = useState(post.user || {});
     const [loadingUser, setLoadingUser] = useState(!post.user);
     const [like, setLike] = useState(post.likes.length)
     const [isLiked, setIsLiked] = useState(post.likes.includes(currentUser._id))
+    const [likeType, setLikeType] = useState(post.likes.includes(currentUser._id) ? 'thumb' : null)
+    const [thumbAnimating, setThumbAnimating] = useState(false)
+    const [heartAnimating, setHeartAnimating] = useState(false)
     const [showComments, setShowComments] = useState(false)
     const [commentCount, setCommentCount] = useState(post.commentCount ?? 0)
     const [showMenu, setShowMenu] = useState(false)
@@ -64,12 +69,33 @@ const Post = ({ post, onDelete, onHide }) => {
         return () => document.removeEventListener("mousedown", handler)
     }, [])
 
-    const likeHandler = () => {
-        try {
-            axios.put("/post/" + post._id + "/like", { userId: currentUser._id })
-        } catch (err) {}
-        setLike(isLiked ? like - 1 : like + 1)
-        setIsLiked(!isLiked)
+    const likeHandler = (type) => {
+        const liking = !isLiked
+        if (liking) {
+            if (type === 'thumb') setThumbAnimating(true)
+            else setHeartAnimating(true)
+            setLikeType(type)
+        } else {
+            setLikeType(null)
+        }
+        axios.put("/post/" + post._id + "/like", { userId: currentUser._id }).catch(() => {})
+        setLike(liking ? like + 1 : like - 1)
+        setIsLiked(liking)
+
+        if (liking && !isOwnPost) {
+            axios.post("/notifications", {
+                userId: post.userId,
+                senderId: currentUser._id,
+                type: "like",
+                postId: post._id,
+            }).catch(() => {})
+            socket?.emit("sendNotification", {
+                senderId: currentUser._id,
+                receiverId: post.userId,
+                type: "like",
+                postId: post._id,
+            })
+        }
     }
 
     const handleDelete = async () => {
@@ -203,38 +229,43 @@ const Post = ({ post, onDelete, onHide }) => {
                     )}
                 </div>
 
-                <div className="post-bottom">
-                    <div className="post-bottom-left">
-                        <span
-                            className={`like-icon${isLiked ? " liked-active" : ""}`}
-                            onClick={likeHandler}
-                            title="Like"
-                        >👍</span>
-                        <span
-                            className="heart-icon"
-                            onClick={likeHandler}
-                            title="Love"
-                        >❤️</span>
-                        <span className="post-like-counter">{like} {like === 1 ? "person" : "people"} like this</span>
-                    </div>
-                    <div className="post-bottom-right">
-                        <span
-                            className="post-comment-text"
-                            onClick={() => setShowComments(prev => !prev)}
-                        >
-                            {commentCount} {commentCount === 1 ? "comment" : "comments"}
-                        </span>
-                    </div>
-                </div>
+            </div>
 
-                {showComments && (
+            <div className="post-bottom">
+                <div className="post-bottom-left">
+                    <span
+                        className={`like-icon${isLiked && likeType === 'thumb' ? " liked-active" : ""}${thumbAnimating ? " like-pop" : ""}`}
+                        onClick={() => likeHandler('thumb')}
+                        onAnimationEnd={() => setThumbAnimating(false)}
+                        title={isLiked && likeType === 'thumb' ? "Unlike" : "Like"}
+                    >👍</span>
+                    <span
+                        className={`heart-icon${isLiked && likeType === 'heart' ? " liked-active" : ""}${heartAnimating ? " like-pop" : ""}`}
+                        onClick={() => likeHandler('heart')}
+                        onAnimationEnd={() => setHeartAnimating(false)}
+                        title={isLiked && likeType === 'heart' ? "Unlike" : "Love"}
+                    >❤️</span>
+                    <span className="post-like-counter">{like} {like === 1 ? "person" : "people"} like this</span>
+                </div>
+                <div className="post-bottom-right">
+                    <span
+                        className="post-comment-text"
+                        onClick={() => setShowComments(prev => !prev)}
+                    >
+                        {commentCount} {commentCount === 1 ? "comment" : "comments"}
+                    </span>
+                </div>
+            </div>
+
+            {showComments && (
+                <div className="post-comments-section">
                     <Comments
                         postId={post._id}
                         postOwnerId={post.userId}
                         onLoaded={setCommentCount}
                     />
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Edit modal */}
             {showEditModal && (

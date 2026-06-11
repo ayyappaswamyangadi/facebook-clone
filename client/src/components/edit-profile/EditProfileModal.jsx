@@ -1,5 +1,5 @@
 import { useContext, useRef, useState } from "react";
-import { Close, Crop, PhotoCamera, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Close, Crop, PhotoCamera } from "@mui/icons-material";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import ImageCropModal from "../image-crop/ImageCropModal";
@@ -28,9 +28,6 @@ const EditProfileModal = ({ user, onClose, onUpdate }) => {
   const [cropTarget, setCropTarget] = useState(null); // "profile" | "cover"
   const [fetchingCrop, setFetchingCrop] = useState(false);
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -101,19 +98,9 @@ const EditProfileModal = ({ user, onClose, onUpdate }) => {
     e.preventDefault();
     setError("");
 
-    if (newPassword && newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (newPassword && newPassword.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-
     setSaving(true);
     try {
       const updates = { ...form };
-      if (newPassword) updates.password = newPassword;
 
       // relationship is a Number enum [1,2,3] on the server — never send "" or it causes a Mongoose ValidationError
       if (!updates.relationship) delete updates.relationship;
@@ -137,6 +124,13 @@ const EditProfileModal = ({ user, onClose, onUpdate }) => {
 
       dispatch({ type: "UPDATE_USER", payload: updates });
       onUpdate({ ...user, ...updates });
+
+      axios.post("/notifications", {
+        userId: currentUser._id,
+        senderId: currentUser._id,
+        type: "profileUpdate",
+      }).catch(() => {});
+
       onClose();
     } catch (err) {
       console.log(err);
@@ -310,52 +304,16 @@ const EditProfileModal = ({ user, onClose, onUpdate }) => {
             </div>
 
             <div className="edit-field-group">
-              <label>Email</label>
+              <label>Email <span className="edit-optional">(cannot be changed)</span></label>
               <input
                 type="email"
                 name="email"
                 value={form.email}
-                onChange={handleChange}
-                placeholder="Email address"
+                readOnly
+                className="edit-field-readonly"
+                tabIndex={-1}
               />
             </div>
-          </div>
-
-          {/* Password change */}
-          <div className="edit-section-divider">
-            <p className="edit-section-label">Change Password <span className="edit-optional">(optional)</span></p>
-          </div>
-          <div className="edit-fields">
-            <div className="edit-field-group">
-              <label>New Password</label>
-              <div className="edit-password-wrapper">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Leave blank to keep current"
-                  minLength={newPassword ? 6 : undefined}
-                />
-                <button
-                  type="button"
-                  className="edit-password-toggle"
-                  onClick={() => setShowPassword((p) => !p)}
-                >
-                  {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                </button>
-              </div>
-            </div>
-            {newPassword && (
-              <div className="edit-field-group">
-                <label>Confirm New Password</label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                />
-              </div>
-            )}
           </div>
 
           {/* Bio / profile details */}

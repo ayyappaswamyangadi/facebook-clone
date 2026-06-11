@@ -2,7 +2,7 @@ import { useContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
 import moment from "moment";
 import { Link } from "react-router-dom";
-import { ThumbUp, Comment, PersonAdd, Close, NotificationsNone } from "@mui/icons-material";
+import { ThumbUp, Comment, PersonAdd, Close, NotificationsNone, AccountCircle } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
 import { NotifSkeleton } from "../loaders/Loaders";
 import "./notifications.scss";
@@ -56,25 +56,33 @@ const NotificationsDropdown = ({ onClose }) => {
     switch (type) {
       case "like":
         return <ThumbUp className="notif-type-icon notif-like" />;
+      case "commentLike":
+        return <ThumbUp className="notif-type-icon notif-like" />;
       case "comment":
         return <Comment className="notif-type-icon notif-comment" />;
       case "follow":
         return <PersonAdd className="notif-type-icon notif-follow" />;
+      case "profileUpdate":
+        return <AccountCircle className="notif-type-icon notif-follow" />;
       default:
         return <NotificationsNone className="notif-type-icon" />;
     }
   };
 
-  const typeText = (type, senderName) => {
+  const typeText = (type, senderName, isSelf) => {
     switch (type) {
       case "like":
         return `${senderName} liked your post`;
+      case "commentLike":
+        return `${senderName} liked your comment`;
       case "comment":
         return `${senderName} commented on your post`;
       case "follow":
         return `${senderName} started following you`;
       case "message":
         return `${senderName} sent you a message`;
+      case "profileUpdate":
+        return isSelf ? "You updated your profile" : `${senderName} updated their profile`;
       default:
         return `${senderName} interacted with you`;
     }
@@ -85,12 +93,14 @@ const NotificationsDropdown = ({ onClose }) => {
     switch (notif.type) {
       case "like":
       case "comment":
-        // Navigate to own profile since the post belongs to the current user
+      case "commentLike":
         return "/profile/" + user.userName;
       case "follow":
         return "/profile/" + (sender?.userName || "");
       case "message":
         return "/messenger";
+      case "profileUpdate":
+        return "/profile/" + user.userName;
       default:
         return "/profile/" + user.userName;
     }
@@ -142,7 +152,7 @@ const NotificationsDropdown = ({ onClose }) => {
                   </div>
                   <div className="notif-content">
                     <p className="notif-text">
-                      {typeText(notif.type, sender?.userName || "Someone")}
+                      {typeText(notif.type, sender?.userName || "Someone", notif.senderId === user._id)}
                     </p>
                     <span className="notif-time">
                       {moment(notif.createdAt).fromNow()}

@@ -12,6 +12,7 @@ import {
 } from "react-router-dom";
 import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "./components/context/AuthContext";
+import { SocketProvider } from "./components/context/SocketContext";
 import Messenger from "./containers/messenger/messenger";
 
 const ScrollRestorer = () => {
@@ -45,7 +46,7 @@ const ScrollRestorer = () => {
 function App() {
   const { user } = useContext(AuthContext);
   return (
-    <>
+    <SocketProvider>
       <Router>
         <ScrollRestorer />
         <Routes>
@@ -69,7 +70,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
-    </>
+    </SocketProvider>
   );
 }
 

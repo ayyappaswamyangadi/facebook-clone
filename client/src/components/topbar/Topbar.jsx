@@ -1,5 +1,6 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { SocketContext } from "../context/SocketContext";
 import "./Topbar.scss";
 import { Search, Chat, Notifications } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
@@ -29,6 +30,7 @@ const FbLogo = () => (
 
 const Topbar = () => {
   const { user, dispatch } = useContext(AuthContext);
+  const { socket } = useContext(SocketContext);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -64,6 +66,13 @@ const Topbar = () => {
     };
     fetchCounts();
   }, [user._id, user.following]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleNotification = () => setNotifCount((prev) => prev + 1);
+    socket.on("getNotification", handleNotification);
+    return () => socket.off("getNotification", handleNotification);
+  }, [socket]);
 
   useEffect(() => {
     const handler = (e) => {

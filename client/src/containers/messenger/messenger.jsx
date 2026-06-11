@@ -3,13 +3,13 @@ import { useContext } from "react";
 import { useLocation } from "react-router-dom";
 import ChatOnline from "../../components/chat-online/ChatOnline";
 import { AuthContext } from "../../components/context/AuthContext";
+import { SocketContext } from "../../components/context/SocketContext";
 import Conversations from "../../components/conversations/Conversations";
 import Message from "../../components/message/Message";
 import Topbar from "../../components/topbar/Topbar";
 import { ConversationSkeleton, Spinner } from "../../components/loaders/Loaders";
 import "./messenger.scss";
 import axios from "axios";
-import { io } from "socket.io-client";
 import EmojiPicker from "emoji-picker-react";
 
 const Messenger = () => {
@@ -20,25 +20,23 @@ const Messenger = () => {
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [newMessage, setNewMessage] = useState("");
     const [arrivalMessage, setArrivalMessage] = useState(null);
-    const [onlineUsers, setOnlineUsers] = useState([]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [chatPartner, setChatPartner] = useState(null);
     const [chatSearch, setChatSearch] = useState("");
     const [conversationUsers, setConversationUsers] = useState({});
-    const socket = useRef();
     const scrollRef = useRef();
     const inputRef = useRef();
     const emojiPickerRef = useRef();
     const { user } = useContext(AuthContext);
+    const { socket, onlineUsers: socketOnlineUsers } = useContext(SocketContext);
+    const onlineUsers = socketOnlineUsers
+        .filter((u) => user.following.includes(u.userId))
+        .map((u) => u.userId);
     const location = useLocation();
     const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
 
     useEffect(() => {
-        socket.current = io(process.env.REACT_APP_SOCKET_URL || "http://localhost:8900", {
-            reconnectionAttempts: 5,
-            reconnectionDelay: 3000,
-        });
-
+        if (!socket) return;
         const handleGetMessage = (data) => {
             setArrivalMessage({
                 sender: data.userId,
@@ -46,44 +44,15 @@ const Messenger = () => {
                 createdAt: Date.now(),
             });
         };
-        socket.current.on("getMessage", handleGetMessage);
-
-        return () => {
-            socket.current.off("getMessage", handleGetMessage);
-            socket.current.disconnect();
-        };
-    }, []);
+        socket.on("getMessage", handleGetMessage);
+        return () => socket.off("getMessage", handleGetMessage);
+    }, [socket]);
 
     useEffect(() => {
         arrivalMessage &&
             currentChat?.members.includes(arrivalMessage.sender) &&
             setMessages((prev) => [...prev, arrivalMessage]);
     }, [arrivalMessage, currentChat]);
-
-    useEffect(() => {
-        if (!socket.current) return;
-
-        const handleGetUsers = (socketUsers) => {
-            setOnlineUsers(
-                user.following.filter((friend) =>
-                    socketUsers.some((u) => u.userId === friend)
-                )
-            );
-        };
-        // Re-register addUser on every connect/reconnect (handles server restarts)
-        const handleConnect = () => {
-            socket.current.emit("addUser", user._id);
-        };
-
-        socket.current.emit("addUser", user._id);
-        socket.current.on("getUsers", handleGetUsers);
-        socket.current.on("connect", handleConnect);
-
-        return () => {
-            socket.current.off("getUsers", handleGetUsers);
-            socket.current.off("connect", handleConnect);
-        };
-    }, [user]);
 
     useEffect(() => {
         const getConversations = async () => {
@@ -199,7 +168,7 @@ const Messenger = () => {
             (memberId) => memberId !== user._id
         );
 
-        socket.current.emit("sendMessage", {
+        socket?.emit("sendMessage", {
             userId: user._id,
             receiverId,
             text: newMessage,
