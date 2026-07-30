@@ -43,8 +43,9 @@ const Login = () => {
       await axios.post("/auth/send-otp", { email: forgotEmail.trim(), purpose: "reset" });
       setForgotOtpSent(true);
     } catch (err) {
+      const msg = err.response?.data;
       setForgotError(
-        err.response?.data || "No account found with that email. Please check and try again."
+        typeof msg === "string" ? msg : "Failed to send OTP. Please check your connection and try again."
       );
     } finally {
       setForgotOtpLoading(false);
@@ -86,9 +87,8 @@ const Login = () => {
       setForgotConfirmPwd("");
       setForgotOtp("");
     } catch (err) {
-      setForgotError(
-        err.response?.data || "Something went wrong. Please try again."
-      );
+      const msg = err.response?.data;
+      setForgotError(typeof msg === "string" ? msg : "Something went wrong. Please try again.");
     } finally {
       setForgotLoading(false);
     }
