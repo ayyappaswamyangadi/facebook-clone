@@ -5,12 +5,14 @@ import moment from "moment";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
+import { useToast } from "../context/ToastContext";
 import { Spinner } from "../loaders/Loaders";
 import "./comments.scss";
 
 const Comments = ({ postId, postOwnerId, onLoaded }) => {
   const { user: currentUser } = useContext(AuthContext);
   const { socket } = useContext(SocketContext);
+  const toast = useToast();
   const public_folder = process.env.REACT_APP_PUBLIC_FOLDER;
 
   const [comments, setComments] = useState([]);
@@ -83,7 +85,7 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
       }
       setText("");
     } catch (err) {
-      console.log(err);
+      toast.error("Failed to post comment.");
     } finally {
       setLoading(false);
     }
@@ -143,7 +145,7 @@ const Comments = ({ postId, postOwnerId, onLoaded }) => {
         return updated;
       });
     } catch (err) {
-      console.log(err);
+      toast.error("Failed to delete comment.");
     }
   };
 

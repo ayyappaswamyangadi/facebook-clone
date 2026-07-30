@@ -1,11 +1,13 @@
 import "./post.scss"
 import { MoreVert, Edit, Delete, Close, Room, VisibilityOff } from "@mui/icons-material";
-import { useContext, useState, useEffect, useRef } from "react"
+import { useContext, useState, useEffect, useRef, memo, useCallback } from "react"
 import axios from 'axios'
 import moment from 'moment'
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
+import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import Comments from "../comments/Comments";
 import { PostAuthorSkeleton } from "../loaders/Loaders";
 
@@ -13,9 +15,11 @@ const PF = process.env.REACT_APP_PUBLIC_FOLDER;
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e4e6e9'/%3E%3Ccircle cx='20' cy='16' r='8' fill='%23bcc0c4'/%3E%3Cellipse cx='20' cy='38' rx='14' ry='10' fill='%23bcc0c4'/%3E%3C/svg%3E";
 const PLACEHOLDER_POST = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f0f2f5'/%3E%3Ctext x='300' y='210' text-anchor='middle' font-family='Arial' font-size='18' fill='%23bcc0c4'%3EImage not available%3C/text%3E%3C/svg%3E";
 
-const Post = ({ post, onDelete, onHide }) => {
+const Post = memo(({ post, onDelete, onHide }) => {
     const { user: currentUser } = useContext(AuthContext)
     const { socket } = useContext(SocketContext)
+    const toast = useToast()
+    const confirm = useConfirm()
     const [user, setUser] = useState(post.user || {});
     const [loadingUser, setLoadingUser] = useState(!post.user);
     const [like, setLike] = useState(post.likes.length)
@@ -98,37 +102,46 @@ const Post = ({ post, onDelete, onHide }) => {
         }
     }
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         setShowMenu(false)
-        if (!window.confirm("Delete this post?")) return
+        const ok = await confirm({
+            title: "Delete Post",
+            message: "This post will be permanently deleted. You can't undo this.",
+            confirmLabel: "Delete",
+            danger: true,
+        })
+        if (!ok) return
         try {
             await axios.delete("/post/" + post._id, { data: { userId: currentUser._id } })
             onDelete && onDelete(post._id)
+            toast.success("Post deleted")
         } catch (err) {
-            console.log(err)
+            toast.error("Failed to delete post. Please try again.")
         }
-    }
+    }, [confirm, toast, post._id, currentUser._id, onDelete])
 
-    const handleHide = async () => {
+    const handleHide = useCallback(async () => {
         setShowMenu(false)
         try {
             await axios.put("/post/" + post._id + "/hide", { userId: currentUser._id })
             onHide && onHide(post._id)
+            toast.info("Post hidden from your feed")
         } catch (err) {
-            console.log(err)
+            toast.error("Failed to hide post.")
         }
-    }
+    }, [toast, post._id, currentUser._id, onHide])
 
-    const handleEditSubmit = async (e) => {
+    const handleEditSubmit = useCallback(async (e) => {
         e.preventDefault()
         try {
             await axios.put("/post/" + post._id, { userId: currentUser._id, desc: editDesc })
             setPostDesc(editDesc)
             setShowEditModal(false)
+            toast.success("Post updated")
         } catch (err) {
-            console.log(err)
+            toast.error("Failed to update post.")
         }
-    }
+    }, [toast, post._id, currentUser._id, editDesc])
 
     const displayName = isOwnPost ? "You" : (user.userName || "")
 
@@ -296,6 +309,6 @@ const Post = ({ post, onDelete, onHide }) => {
             )}
         </div>
     )
-}
+})
 
 export default Post

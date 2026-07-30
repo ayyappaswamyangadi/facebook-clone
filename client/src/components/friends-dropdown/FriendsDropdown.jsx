@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { Close, PersonAdd, Check, Chat } from "@mui/icons-material";
 import { AuthContext } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { Spinner } from "../loaders/Loaders";
 import "./friends-dropdown.scss";
 
@@ -17,6 +18,7 @@ const avatarSrc = (pic) =>
 const FriendsDropdown = ({ onClose }) => {
   const { user, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
+  const toast = useToast();
   const [tab, setTab] = useState("requests");
   const [followers, setFollowers] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -72,11 +74,12 @@ const FriendsDropdown = ({ onClose }) => {
       navigate("/messenger", { state: { conversationId: conversation._id } });
       onClose();
     } catch (err) {
-      console.log(err);
+      toast.error("Failed to open conversation.");
     }
   };
 
-  const handleAccept = async (followerId) => {
+  const handleAccept = async (follower) => {
+    const followerId = String(follower._id);
     setAccepting((p) => ({ ...p, [followerId]: true }));
     try {
       await axios.put("/users/" + followerId + "/follow", {
@@ -86,8 +89,9 @@ const FriendsDropdown = ({ onClose }) => {
       setFollowers((p) => p.filter((f) => String(f._id) !== followerId));
       const res = await axios.get("/users/friends/" + user._id);
       setFriends(res.data);
+      toast.success(`You and ${follower.userName} are now friends!`);
     } catch (err) {
-      console.log(err);
+      toast.error("Failed to accept request.");
     } finally {
       setAccepting((p) => ({ ...p, [followerId]: false }));
     }
@@ -152,7 +156,7 @@ const FriendsDropdown = ({ onClose }) => {
                     <button
                       className="friends-dd-accept"
                       disabled={accepting[f._id]}
-                      onClick={() => handleAccept(String(f._id))}
+                      onClick={() => handleAccept(f)}
                     >
                       <Check fontSize="small" />
                       {accepting[f._id] ? "Adding…" : "Follow Back"}

@@ -3,6 +3,7 @@ import { useContext, useRef, useState, useEffect } from "react"
 import EmojiPicker from "emoji-picker-react"
 import "./Share.scss"
 import { AuthContext } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import axios from 'axios';
 import { Link } from 'react-router-dom'
 
@@ -14,6 +15,7 @@ const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2
 const Share = () => {
     const public_folder_path = process.env.REACT_APP_PUBLIC_FOLDER;
     const { user } = useContext(AuthContext)
+    const toast = useToast()
 
     const [desc, setDesc] = useState("")
     const [file, setFile] = useState(null)
@@ -119,14 +121,25 @@ const Share = () => {
                 newPost.img = uploadRes.data
             }
 
-            await axios.post('/post', newPost)
-            window.location.reload()
+            const res = await axios.post('/post', newPost)
+            toast.success("Post shared!")
+            window.dispatchEvent(new CustomEvent("fb-post-created", { detail: res.data }))
+            setDesc("")
+            setFile(null)
+            setLocation("")
+            setTaggedFriends([])
+            setShowLocationInput(false)
+            setShowTagInput(false)
+            setShowEmojiPicker(false)
+            if (fileInputRef.current) fileInputRef.current.value = ""
+            setIsSharing(false)
         } catch (err) {
             const status = err.response?.status;
             const message = err.response?.data;
             if (status === 404 && typeof message === 'string' && message.toLowerCase().includes("user not found")) {
                 setError("Your account no longer exists. Logging you out…")
             } else {
+                toast.error("Failed to share post. Please try again.")
                 setError("Failed to share post. Please try again.")
             }
             setIsSharing(false)
